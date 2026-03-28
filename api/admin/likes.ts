@@ -1,6 +1,6 @@
-import { requireAdmin } from '../../lib/auth'
-import { json, getSearchParam, serverError } from '../../lib/http'
-import { getLikes, getTotalLikes } from '../../lib/repository'
+import { requireAdmin } from '../../lib/auth.js'
+import { json, getSearchParam, serverError } from '../../lib/http.js'
+import { getLikes, getTotalLikes } from '../../lib/repository.js'
 
 export async function GET(request: Request) {
   const authError = requireAdmin(request)

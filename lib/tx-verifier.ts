@@ -1,4 +1,4 @@
-import { getConfig } from './repository'
+import { getConfig } from './repository.js'
 
 const BSCSCAN_API = 'https://api.bscscan.com/api'
 const USDT_CONTRACT =

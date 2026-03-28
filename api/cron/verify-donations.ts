@@ -1,10 +1,10 @@
-import { requireCronSecret } from '../../lib/auth'
-import { json, serverError } from '../../lib/http'
+import { requireCronSecret } from '../../lib/auth.js'
+import { json, serverError } from '../../lib/http.js'
 import {
   confirmDonation,
   getPendingDonations,
-} from '../../lib/repository'
-import { verifyUsdtTx } from '../../lib/tx-verifier'
+} from '../../lib/repository.js'
+import { verifyUsdtTx } from '../../lib/tx-verifier.js'
 
 export async function GET(request: Request) {
   const authError = requireCronSecret(request)

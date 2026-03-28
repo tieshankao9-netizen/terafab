@@ -1,4 +1,4 @@
-import { unauthorized } from './http'
+import { unauthorized } from './http.js'
 
 export function requireAdmin(request: Request) {
   const adminPassword = process.env.ADMIN_PASSWORD

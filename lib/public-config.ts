@@ -1,4 +1,4 @@
-import { getConfig, getLikesToLaunch, getTotalLikes, hasLaunchTriggered } from './repository'
+import { getConfig, getLikesToLaunch, getTotalLikes, hasLaunchTriggered } from './repository.js'
 
 export async function getPublicConfigPayload() {
   const totalLikes = await getTotalLikes()

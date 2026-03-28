@@ -1,5 +1,5 @@
-import { badRequest, json, readJson, serverError } from '../../lib/http'
-import { buildFingerprint, getClientIp, sanitizeText } from '../../lib/helpers'
+import { badRequest, json, readJson, serverError } from '../../lib/http.js'
+import { buildFingerprint, getClientIp, sanitizeText } from '../../lib/helpers.js'
 import {
   createLikeAndIncrement,
   getLikesToLaunch,
@@ -8,7 +8,7 @@ import {
   hasLaunchTriggered,
   hasVoted,
   setConfig,
-} from '../../lib/repository'
+} from '../../lib/repository.js'
 
 export async function POST(request: Request) {
   try {

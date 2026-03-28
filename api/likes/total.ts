@@ -1,5 +1,5 @@
-import { json } from '../../lib/http'
-import { getLikesToLaunch, getTotalLikes, hasLaunchTriggered } from '../../lib/repository'
+import { json } from '../../lib/http.js'
+import { getLikesToLaunch, getTotalLikes, hasLaunchTriggered } from '../../lib/repository.js'
 
 export async function GET() {
   const total = await getTotalLikes()

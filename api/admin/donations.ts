@@ -1,12 +1,12 @@
-import { requireAdmin } from '../../lib/auth'
-import { badRequest, json, readJson, serverError } from '../../lib/http'
+import { requireAdmin } from '../../lib/auth.js'
+import { badRequest, json, readJson, serverError } from '../../lib/http.js'
 import {
   deleteDonation,
   getAllDonations,
   getConfirmedDonations,
   upsertManualDonation,
-} from '../../lib/repository'
-import { sanitizeText } from '../../lib/helpers'
+} from '../../lib/repository.js'
+import { sanitizeText } from '../../lib/helpers.js'
 
 export async function GET(request: Request) {
   const authError = requireAdmin(request)

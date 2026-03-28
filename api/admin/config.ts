@@ -1,7 +1,7 @@
-import { requireAdmin } from '../../lib/auth'
-import { badRequest, json, readJson, serverError } from '../../lib/http'
-import { isValidAddress } from '../../lib/helpers'
-import { getAllConfig, setConfigs } from '../../lib/repository'
+import { requireAdmin } from '../../lib/auth.js'
+import { badRequest, json, readJson, serverError } from '../../lib/http.js'
+import { isValidAddress } from '../../lib/helpers.js'
+import { getAllConfig, setConfigs } from '../../lib/repository.js'
 
 const ALLOWED_KEYS = new Set([
   'wallet_address',

@@ -1,4 +1,4 @@
-import { json } from '../lib/http'
+import { json } from '../lib/http.js'
 
 export function GET() {
   return json({

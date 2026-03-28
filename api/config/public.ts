@@ -1,5 +1,5 @@
-import { json } from '../../lib/http'
-import { getPublicConfigPayload } from '../../lib/public-config'
+import { json } from '../../lib/http.js'
+import { getPublicConfigPayload } from '../../lib/public-config.js'
 
 export async function GET() {
   return json(await getPublicConfigPayload())

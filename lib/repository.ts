@@ -1,4 +1,4 @@
-import { ensureSchema, getSql } from './db'
+import { ensureSchema, getSql } from './db.js'
 
 export interface ConfigMap {
   [key: string]: string

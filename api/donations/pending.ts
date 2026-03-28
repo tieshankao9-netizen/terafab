@@ -1,11 +1,11 @@
-import { badRequest, json, readJson, serverError } from '../../lib/http'
-import { isValidTxHash, sanitizeText } from '../../lib/helpers'
+import { badRequest, json, readJson, serverError } from '../../lib/http.js'
+import { isValidTxHash, sanitizeText } from '../../lib/helpers.js'
 import {
   confirmDonation,
   getConfirmedDonations,
   insertPendingDonation,
-} from '../../lib/repository'
-import { verifyUsdtTx } from '../../lib/tx-verifier'
+} from '../../lib/repository.js'
+import { verifyUsdtTx } from '../../lib/tx-verifier.js'
 
 export async function POST(request: Request) {
   try {

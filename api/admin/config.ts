@@ -12,15 +12,22 @@ const ALLOWED_KEYS = new Set([
   'launch_triggered',
 ])
 
+const HIDDEN_KEYS = new Set(['admin_username', 'admin_password'])
+
 export async function GET(request: Request) {
-  const authError = requireAdmin(request)
+  const authError = await requireAdmin(request)
   if (authError) return authError
 
-  return json({ config: await getAllConfig() })
+  const config = await getAllConfig()
+  const visibleConfig = Object.fromEntries(
+    Object.entries(config).filter(([key]) => !HIDDEN_KEYS.has(key)),
+  )
+
+  return json({ config: visibleConfig })
 }
 
 export async function POST(request: Request) {
-  const authError = requireAdmin(request)
+  const authError = await requireAdmin(request)
   if (authError) return authError
 
   try {
@@ -46,7 +53,7 @@ export async function POST(request: Request) {
         continue
       }
 
-      if ((key === 'likes_to_launch' || key === 'total_likes') && (!/^\d+$/.test(value))) {
+      if ((key === 'likes_to_launch' || key === 'total_likes') && !/^\d+$/.test(value)) {
         errors.push(`${key} must be a non-negative integer`)
         continue
       }

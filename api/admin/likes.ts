@@ -3,7 +3,7 @@ import { json, getSearchParam, serverError } from '../../lib/http.js'
 import { getLikes, getTotalLikes } from '../../lib/repository.js'
 
 export async function GET(request: Request) {
-  const authError = requireAdmin(request)
+  const authError = await requireAdmin(request)
   if (authError) return authError
 
   try {

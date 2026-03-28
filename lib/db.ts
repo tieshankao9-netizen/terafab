@@ -61,7 +61,9 @@ export async function ensureSchema() {
           ('wallet_address', ${process.env.WALLET_ADDRESS ?? ''}),
           ('likes_to_launch', ${process.env.LIKES_TO_LAUNCH ?? '10000'}),
           ('site_name', 'Terafab'),
-          ('site_description', '点燃火星征程 · BNB链USDT捐赠')
+          ('site_description', '点燃火星征程 · BNB链USDT捐赠'),
+          ('admin_username', ${process.env.ADMIN_USERNAME ?? 'admin'}),
+          ('admin_password', ${process.env.ADMIN_PASSWORD ?? ''})
         ON CONFLICT (key) DO NOTHING
       `
     })()

@@ -9,7 +9,7 @@ import {
 import { sanitizeText } from '../../lib/helpers.js'
 
 export async function GET(request: Request) {
-  const authError = requireAdmin(request)
+  const authError = await requireAdmin(request)
   if (authError) return authError
 
   try {
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const authError = requireAdmin(request)
+  const authError = await requireAdmin(request)
   if (authError) return authError
 
   try {
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const authError = requireAdmin(request)
+  const authError = await requireAdmin(request)
   if (authError) return authError
 
   try {
@@ -73,7 +73,7 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const authError = requireAdmin(request)
+  const authError = await requireAdmin(request)
   if (authError) return authError
 
   try {

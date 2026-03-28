@@ -1,47 +1,119 @@
 /**
  * Admin API client
- * All requests include Bearer token authentication.
+ * Supports Basic auth (username + password) with Bearer fallback.
  */
 
 import { API_BASE_URL } from './runtimeConfig'
 
 const BASE_URL = API_BASE_URL
+const LEGACY_TOKEN_KEY = 'terafab_admin_token'
+const SESSION_KEY = 'terafab_admin_session'
 
-// ── Auth token management ────────────────────────────────────────────────────
+export interface AdminSession {
+  username: string
+  password: string
+}
+
+function getStorage(): Storage | null {
+  if (typeof window === 'undefined') return null
+  return window.sessionStorage
+}
+
+function encodeBase64Utf8(value: string): string {
+  const bytes = new TextEncoder().encode(value)
+  let binary = ''
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte)
+  })
+  return btoa(binary)
+}
+
+export function getAdminSession(): AdminSession | null {
+  const storage = getStorage()
+  const raw = storage?.getItem(SESSION_KEY)
+  if (!raw) return null
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<AdminSession>
+    if (!parsed.username || !parsed.password) return null
+    return {
+      username: String(parsed.username),
+      password: String(parsed.password),
+    }
+  } catch {
+    return null
+  }
+}
+
+export function hasAdminSession(): boolean {
+  return Boolean(getAdminAuthHeader())
+}
+
+export function setAdminCredentials(username: string, password: string): void {
+  const storage = getStorage()
+  if (!storage) return
+
+  storage.setItem(SESSION_KEY, JSON.stringify({ username, password }))
+  storage.removeItem(LEGACY_TOKEN_KEY)
+}
 
 export function getAdminToken(): string {
-  return sessionStorage.getItem('terafab_admin_token') ?? ''
+  const session = getAdminSession()
+  if (session) return session.password
+
+  const storage = getStorage()
+  return storage?.getItem(LEGACY_TOKEN_KEY) ?? ''
 }
 
 export function setAdminToken(token: string): void {
-  sessionStorage.setItem('terafab_admin_token', token)
+  const storage = getStorage()
+  if (!storage) return
+  storage.setItem(LEGACY_TOKEN_KEY, token)
 }
 
 export function clearAdminToken(): void {
-  sessionStorage.removeItem('terafab_admin_token')
+  const storage = getStorage()
+  if (!storage) return
+
+  storage.removeItem(SESSION_KEY)
+  storage.removeItem(LEGACY_TOKEN_KEY)
 }
 
-// ── Base fetch with auth ─────────────────────────────────────────────────────
+function getAdminAuthHeader(): string {
+  const session = getAdminSession()
+  if (session) {
+    return `Basic ${encodeBase64Utf8(`${session.username}:${session.password}`)}`
+  }
 
-async function adminFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const token = getAdminToken()
+  const legacyToken = getStorage()?.getItem(LEGACY_TOKEN_KEY) ?? ''
+  return legacyToken ? `Bearer ${legacyToken}` : ''
+}
+
+async function adminFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const headers = new Headers(options.headers)
+  const authHeader = getAdminAuthHeader()
+
+  if (authHeader) {
+    headers.set('Authorization', authHeader)
+  }
+
+  if (options.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json')
+  }
+
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      ...(options?.headers ?? {}),
-    },
     ...options,
+    headers,
   })
+
   if (res.status === 401) throw new Error('UNAUTHORIZED')
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
     throw new Error((body as { error?: string }).error ?? `HTTP ${res.status}`)
   }
+
   return res.json() as Promise<T>
 }
-
-// ── Types ────────────────────────────────────────────────────────────────────
 
 export interface AdminStats {
   totalLikes: number
@@ -63,7 +135,7 @@ export interface AdminDonation {
   name: string
   amount: number
   tx_hash: string
-  status: number     // 0=pending, 1=confirmed
+  status: number
   is_manual: number
   created_at: string
 }
@@ -72,7 +144,10 @@ export interface ConfigMap {
   [key: string]: string
 }
 
-// ── Likes ────────────────────────────────────────────────────────────────────
+export interface AdminCredentialsInfo {
+  username: string
+  passwordConfigured: boolean
+}
 
 export async function adminGetLikes(limit = 100, offset = 0): Promise<{
   records: LikeRecord[]
@@ -84,8 +159,6 @@ export async function adminGetLikes(limit = 100, offset = 0): Promise<{
 export async function adminGetStats(): Promise<AdminStats> {
   return adminFetch<AdminStats>('/api/likes/total')
 }
-
-// ── Donations ─────────────────────────────────────────────────────────────────
 
 export async function adminGetAllDonations(): Promise<{ donations: AdminDonation[] }> {
   return adminFetch('/api/admin/donations')
@@ -104,7 +177,7 @@ export async function adminAddDonation(data: {
 
 export async function adminEditDonation(
   id: number,
-  data: { name: string; amount: number; tx_hash?: string }
+  data: { name: string; amount: number; tx_hash?: string },
 ): Promise<{ success: boolean }> {
   return adminFetch('/api/admin/donations', {
     method: 'PUT',
@@ -119,8 +192,6 @@ export async function adminDeleteDonation(id: number): Promise<{ success: boolea
   })
 }
 
-// ── Config ────────────────────────────────────────────────────────────────────
-
 export async function adminGetConfig(): Promise<{ config: ConfigMap }> {
   return adminFetch('/api/admin/config')
 }
@@ -133,5 +204,23 @@ export async function adminSetConfig(updates: Partial<ConfigMap>): Promise<{
   return adminFetch('/api/admin/config', {
     method: 'POST',
     body: JSON.stringify(updates),
+  })
+}
+
+export async function adminGetCredentials(): Promise<AdminCredentialsInfo> {
+  return adminFetch('/api/admin/credentials')
+}
+
+export async function adminUpdateCredentials(data: {
+  username: string
+  password?: string
+}): Promise<{
+  success: boolean
+  username: string
+  passwordUpdated: boolean
+}> {
+  return adminFetch('/api/admin/credentials', {
+    method: 'POST',
+    body: JSON.stringify(data),
   })
 }

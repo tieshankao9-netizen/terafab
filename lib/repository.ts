@@ -4,6 +4,11 @@ export interface ConfigMap {
   [key: string]: string
 }
 
+export interface AdminCredentials {
+  username: string
+  password: string
+}
+
 export interface LikeRecord {
   id: number
   ip_fingerprint: string
@@ -41,6 +46,13 @@ export async function getAllConfig(): Promise<ConfigMap> {
   ` as Array<{ key: string; value: string }>
 
   return Object.fromEntries(rows.map((row) => [row.key, row.value]))
+}
+
+export async function getAdminCredentials(): Promise<AdminCredentials> {
+  return {
+    username: (await getConfig('admin_username')) ?? (process.env.ADMIN_USERNAME ?? 'admin'),
+    password: (await getConfig('admin_password')) ?? (process.env.ADMIN_PASSWORD ?? ''),
+  }
 }
 
 export async function setConfig(key: string, value: string) {

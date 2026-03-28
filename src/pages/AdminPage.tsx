@@ -1,6 +1,6 @@
 /**
  * AdminPage — /admin route
- * Password-protected management console with dark HUD aesthetic.
+ * Username + password protected management console.
  */
 
 import { useState, useEffect } from 'react'
@@ -11,23 +11,20 @@ import AdminDashboard from '@/components/admin/AdminDashboard'
 import AdminLikes from '@/components/admin/AdminLikes'
 import AdminDonations from '@/components/admin/AdminDonations'
 import AdminConfig from '@/components/admin/AdminConfig'
-import { getAdminToken, clearAdminToken } from '@/utils/adminApi'
+import { hasAdminSession, clearAdminToken } from '@/utils/adminApi'
 
 export default function AdminPage() {
   const [isAuthed, setIsAuthed] = useState(false)
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard')
   const [checkingToken, setCheckingToken] = useState(true)
 
-  // Check for existing session token on mount
   useEffect(() => {
-    const token = getAdminToken()
-    if (token) {
-      // Re-verify token is still valid
+    if (hasAdminSession()) {
       import('@/utils/adminApi').then(({ adminGetConfig }) =>
         adminGetConfig()
           .then(() => setIsAuthed(true))
           .catch(() => clearAdminToken())
-          .finally(() => setCheckingToken(false))
+          .finally(() => setCheckingToken(false)),
       )
     } else {
       setCheckingToken(false)
@@ -39,7 +36,6 @@ export default function AdminPage() {
     setActiveTab('dashboard')
   }
 
-  // Loading spinner while checking stored token
   if (checkingToken) {
     return (
       <div
@@ -56,18 +52,15 @@ export default function AdminPage() {
     )
   }
 
-  // Not authenticated → show login
   if (!isAuthed) {
     return <AdminLogin onSuccess={() => setIsAuthed(true)} />
   }
 
-  // Authenticated → show admin panel
   return (
     <div
       className="flex min-h-screen"
       style={{ background: 'radial-gradient(ellipse at top left, #0a1525 0%, #030508 60%)' }}
     >
-      {/* Background grid decoration */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
@@ -78,16 +71,13 @@ export default function AdminPage() {
         }}
       />
 
-      {/* Sidebar */}
       <AdminSidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onLogout={handleLogout}
       />
 
-      {/* Main content */}
       <main className="flex-1 relative z-10 overflow-auto">
-        {/* Top bar */}
         <div
           className="sticky top-0 z-20 flex items-center justify-between px-8 py-4"
           style={{
@@ -106,11 +96,9 @@ export default function AdminPage() {
             </span>
           </div>
 
-          {/* Live clock */}
           <LiveClock />
         </div>
 
-        {/* Tab content */}
         <div className="px-8 py-6 max-w-5xl">
           <AnimatePresence mode="wait">
             <motion.div
@@ -132,12 +120,12 @@ export default function AdminPage() {
   )
 }
 
-// Live UTC clock in the top bar
 function LiveClock() {
   const [time, setTime] = useState(new Date())
+
   useEffect(() => {
-    const t = setInterval(() => setTime(new Date()), 1000)
-    return () => clearInterval(t)
+    const timer = setInterval(() => setTime(new Date()), 1000)
+    return () => clearInterval(timer)
   }, [])
 
   return (

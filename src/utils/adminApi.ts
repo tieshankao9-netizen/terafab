@@ -192,6 +192,17 @@ export async function adminDeleteDonation(id: number): Promise<{ success: boolea
   })
 }
 
+export async function adminVerifyDonation(id: number): Promise<{
+  success: boolean
+  confirmed: boolean
+  message: string
+}> {
+  return adminFetch('/api/admin/donations', {
+    method: 'PATCH',
+    body: JSON.stringify({ id, action: 'verify' }),
+  })
+}
+
 export async function adminGetConfig(): Promise<{ config: ConfigMap }> {
   return adminFetch('/api/admin/config')
 }

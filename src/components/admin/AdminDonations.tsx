@@ -13,6 +13,7 @@ import {
   adminAddDonation,
   adminEditDonation,
   adminDeleteDonation,
+  adminVerifyDonation,
   AdminDonation,
 } from '@/utils/adminApi'
 
@@ -164,6 +165,8 @@ export default function AdminDonations() {
   const [editTarget, setEditTarget] = useState<AdminDonation | null | undefined>(undefined) // undefined=closed, null=add new
   const [deleteTarget, setDeleteTarget] = useState<AdminDonation | null>(null)
   const [filter, setFilter] = useState<'all' | 'confirmed' | 'pending'>('all')
+  const [actionBusyId, setActionBusyId] = useState<number | null>(null)
+  const [feedback, setFeedback] = useState<{ success: boolean; msg: string } | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -179,8 +182,10 @@ export default function AdminDonations() {
   const handleSave = async (data: { name: string; amount: number; tx_hash: string }) => {
     if (editTarget === null) {
       await adminAddDonation(data)
+      setFeedback({ success: true, msg: '手动记录已保存，并直接进入支持者榜单。' })
     } else if (editTarget) {
       await adminEditDonation(editTarget.id, data)
+      setFeedback({ success: true, msg: '捐款记录已更新。' })
     }
     await load()
   }
@@ -188,8 +193,30 @@ export default function AdminDonations() {
   const handleDelete = async () => {
     if (!deleteTarget) return
     await adminDeleteDonation(deleteTarget.id)
+    setFeedback({ success: true, msg: '捐款记录已删除。' })
     setDeleteTarget(null)
     await load()
+  }
+
+  const handleVerify = async (donation: AdminDonation) => {
+    setActionBusyId(donation.id)
+    setFeedback(null)
+
+    try {
+      const result = await adminVerifyDonation(donation.id)
+      setFeedback({
+        success: result.success,
+        msg: result.message,
+      })
+      await load()
+    } catch (error) {
+      setFeedback({
+        success: false,
+        msg: error instanceof Error ? error.message : '链上复核失败',
+      })
+    } finally {
+      setActionBusyId(null)
+    }
   }
 
   const filtered = donations.filter((d) => {
@@ -199,6 +226,7 @@ export default function AdminDonations() {
   })
 
   const totalUSDT = donations.filter((d) => d.status === 1).reduce((s, d) => s + d.amount, 0)
+  const pendingCount = donations.filter((d) => d.status === 0).length
 
   return (
     <div className="space-y-5">
@@ -207,7 +235,7 @@ export default function AdminDonations() {
         <div>
           <h2 className="font-display text-2xl font-bold" style={{ color: '#FF8C00' }}>捐款管理</h2>
           <p className="font-mono text-xs text-metal-light opacity-40 mt-1">
-            DONATIONS · 共 {donations.length} 条 · 已确认 {totalUSDT.toLocaleString()} USDT
+            DONATIONS · 共 {donations.length} 条 · 已确认 {totalUSDT.toLocaleString()} USDT · 待复核 {pendingCount} 条
           </p>
         </div>
         <div className="flex gap-2">
@@ -227,6 +255,43 @@ export default function AdminDonations() {
           </button>
         </div>
       </div>
+
+      <div
+        className="rounded-xl px-4 py-4 space-y-2"
+        style={{
+          background: 'linear-gradient(135deg, rgba(0,212,255,0.06), rgba(255,140,0,0.05))',
+          border: '1px solid rgba(0,212,255,0.14)',
+        }}
+      >
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-plasma-cyan opacity-75">
+          真实捐款录入流程
+        </div>
+        <div className="font-mono text-xs text-metal-light opacity-60 leading-6">
+          1. 前台用户连接钱包并发送 USDT，随后提交交易哈希。
+          <br />
+          2. 后端会校验收款地址、USDT 合约和金额，验证成功后自动进入支持者榜单。
+          <br />
+          3. 若链上尚未返回确认，记录会先留在“待链上复核”；你可以在这里点“立即复核”，Vercel 定时任务也会每日复核一次。
+          <br />
+          4. “手动添加”只建议用于补录已经线下核实过的真实支持，不建议伪造链上记录。
+        </div>
+      </div>
+
+      {feedback && (
+        <div
+          className="flex items-center gap-2 rounded-xl px-4 py-3"
+          style={{
+            background: feedback.success ? 'rgba(0,255,204,0.08)' : 'rgba(255,77,0,0.08)',
+            border: `1px solid ${feedback.success ? 'rgba(0,255,204,0.22)' : 'rgba(255,77,0,0.22)'}`,
+          }}
+        >
+          <AlertTriangle
+            size={14}
+            className={feedback.success ? 'text-plasma-cyan' : 'text-ignite-orange'}
+          />
+          <span className="font-mono text-xs text-metal-light opacity-80">{feedback.msg}</span>
+        </div>
+      )}
 
       {/* Filter tabs */}
       <div className="flex gap-2">
@@ -257,7 +322,7 @@ export default function AdminDonations() {
       >
         {/* Head */}
         <div
-          className="grid grid-cols-[1.5rem_1fr_5rem_5rem_6rem_5rem] gap-3 px-4 py-3"
+          className="grid grid-cols-[1.5rem_1fr_5rem_5rem_6rem_8rem] gap-3 px-4 py-3"
           style={{ borderBottom: '1px solid rgba(255,215,0,0.06)', background: 'rgba(255,215,0,0.02)' }}
         >
           {['#', '姓名', '金额', '状态', '时间', '操作'].map((h) => (
@@ -276,7 +341,7 @@ export default function AdminDonations() {
             {filtered.map((d, i) => (
               <motion.div
                 key={d.id}
-                className="grid grid-cols-[1.5rem_1fr_5rem_5rem_6rem_5rem] gap-3 px-4 py-3 items-center hover:bg-[rgba(255,215,0,0.02)] transition-colors"
+                className="grid grid-cols-[1.5rem_1fr_5rem_5rem_6rem_8rem] gap-3 px-4 py-3 items-center hover:bg-[rgba(255,215,0,0.02)] transition-colors"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
               >
                 <div className="font-mono text-xs opacity-30 text-metal-light">{i + 1}</div>
@@ -309,7 +374,7 @@ export default function AdminDonations() {
                         : { background: 'rgba(255,140,0,0.1)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.25)' }
                     }
                   >
-                    {d.status === 1 ? '已确认' : '待验证'}
+                    {d.status === 1 ? '已确认' : '待链上复核'}
                   </span>
                   {d.is_manual === 1 && (
                     <span className="ml-1 font-mono text-[9px] opacity-40 text-metal-light">手动</span>
@@ -322,6 +387,26 @@ export default function AdminDonations() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1.5">
+                  {d.status === 0 && !d.tx_hash.startsWith('manual') && (
+                    <button
+                      onClick={() => handleVerify(d)}
+                      disabled={actionBusyId === d.id}
+                      className="w-7 h-7 rounded flex items-center justify-center transition-all hover:scale-110 disabled:opacity-50 disabled:hover:scale-100"
+                      style={{ border: '1px solid rgba(255,215,0,0.2)', color: '#FFD700' }}
+                      title="立即链上复核"
+                    >
+                      <motion.div
+                        animate={actionBusyId === d.id ? { rotate: 360 } : { rotate: 0 }}
+                        transition={{
+                          duration: 0.9,
+                          repeat: actionBusyId === d.id ? Infinity : 0,
+                          ease: 'linear',
+                        }}
+                      >
+                        <RefreshCw size={12} />
+                      </motion.div>
+                    </button>
+                  )}
                   <button
                     onClick={() => setEditTarget(d)}
                     className="w-7 h-7 rounded flex items-center justify-center transition-all hover:scale-110"

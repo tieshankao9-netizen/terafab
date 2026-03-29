@@ -3,6 +3,10 @@ import { neon } from '@neondatabase/serverless'
 let schemaPromise: Promise<void> | null = null
 let client: ReturnType<typeof neon> | null = null
 
+const DEFAULT_SITE_DESCRIPTION =
+  'Interactive fan mission on BNB Chain with supporter board and commemorative NFT experiments.'
+const LEGACY_SITE_DESCRIPTION = '点燃火星征程 · BNB链USDT捐赠'
+
 function getDatabaseUrl() {
   const databaseUrl = process.env.DATABASE_URL
   if (!databaseUrl) {
@@ -61,10 +65,17 @@ export async function ensureSchema() {
           ('wallet_address', ${process.env.WALLET_ADDRESS ?? ''}),
           ('likes_to_launch', ${process.env.LIKES_TO_LAUNCH ?? '10000'}),
           ('site_name', 'Terafab'),
-          ('site_description', 'Interactive fan mission on BNB Chain with supporter board and commemorative NFT experiments.'),
+          ('site_description', ${DEFAULT_SITE_DESCRIPTION}),
           ('admin_username', ${process.env.ADMIN_USERNAME ?? 'admin'}),
           ('admin_password', ${process.env.ADMIN_PASSWORD ?? ''})
         ON CONFLICT (key) DO NOTHING
+      `
+
+      await sql`
+        UPDATE config
+        SET value = ${DEFAULT_SITE_DESCRIPTION}
+        WHERE key = 'site_description'
+          AND value = ${LEGACY_SITE_DESCRIPTION}
       `
     })()
   }

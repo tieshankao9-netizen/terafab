@@ -178,6 +178,32 @@ export async function getAllDonations(): Promise<DonationRecord[]> {
   return rows.map((row) => ({ ...row, amount: Number(row.amount) }))
 }
 
+export async function getDonationById(id: number): Promise<DonationRecord | null> {
+  await ensureSchema()
+  const sql = getSql()
+  const rows = await sql`
+    SELECT
+      id,
+      name,
+      amount::text,
+      tx_hash,
+      status,
+      is_manual,
+      created_at::text
+    FROM donations
+    WHERE id = ${id}
+    LIMIT 1
+  ` as Array<DonationRecord & { amount: string; status: number; is_manual: number }>
+
+  const row = rows[0]
+  if (!row) return null
+
+  return {
+    ...row,
+    amount: Number(row.amount),
+  }
+}
+
 export async function insertPendingDonation(name: string, amount: number, txHash: string) {
   await ensureSchema()
   const sql = getSql()

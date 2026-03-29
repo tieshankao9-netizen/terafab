@@ -80,9 +80,9 @@ const FIELDS: FieldDef[] = [
   {
     key: 'site_description',
     label: '站点描述',
-    desc: 'SEO description',
+    desc: 'SEO description / entertainment-first positioning',
     type: 'text',
-    placeholder: 'Ignite the Mars mission',
+    placeholder: 'Interactive fan mission on BNB Chain with supporter board and NFT experiments.',
   },
 ]
 

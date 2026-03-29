@@ -28,6 +28,7 @@ export type DonationStep =
   | 'sending'
   | 'confirming'
   | 'submitting'
+  | 'pending_review'
   | 'success'
   | 'error'
 
@@ -36,6 +37,7 @@ export interface DonationState {
   txHash?: string
   errorMsg?: string
   confirmedTxHash?: string
+  infoMsg?: string
 }
 
 export function useDonation() {
@@ -107,13 +109,27 @@ export function useDonation() {
         // ── Step 6: Submit to backend for leaderboard ─────────────────────
         setState({ step: 'submitting', txHash })
 
-        await submitDonationPending({
+        const submission = await submitDonationPending({
           name,
           amount: amountUSDT,
           tx_hash: txHash,
         })
 
-        setState({ step: 'success', confirmedTxHash: txHash, txHash })
+        if (submission.confirmed) {
+          setState({
+            step: 'success',
+            confirmedTxHash: txHash,
+            txHash,
+            infoMsg: submission.message,
+          })
+        } else {
+          setState({
+            step: 'pending_review',
+            confirmedTxHash: txHash,
+            txHash,
+            infoMsg: submission.message,
+          })
+        }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
 

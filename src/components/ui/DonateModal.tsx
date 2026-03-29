@@ -15,6 +15,43 @@ import { bsc } from '@/utils/web3Config'
 import { hasWalletConnectProjectId } from '@/utils/runtimeConfig'
 
 const QUICK_AMOUNTS = [10, 50, 100, 500]
+const DONATION_DRAFT_KEY = 'terafab_donation_draft'
+
+interface DonationDraft {
+  name: string
+  amount: string
+  view: 'prompt' | 'form'
+  resumeOnReload: boolean
+}
+
+function readDonationDraft(): DonationDraft | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const raw = window.sessionStorage.getItem(DONATION_DRAFT_KEY)
+    if (!raw) return null
+
+    const parsed = JSON.parse(raw) as Partial<DonationDraft>
+    return {
+      name: String(parsed.name ?? ''),
+      amount: String(parsed.amount ?? ''),
+      view: parsed.view === 'prompt' ? 'prompt' : 'form',
+      resumeOnReload: Boolean(parsed.resumeOnReload),
+    }
+  } catch {
+    return null
+  }
+}
+
+function writeDonationDraft(draft: DonationDraft) {
+  if (typeof window === 'undefined') return
+  window.sessionStorage.setItem(DONATION_DRAFT_KEY, JSON.stringify(draft))
+}
+
+function clearDonationDraft() {
+  if (typeof window === 'undefined') return
+  window.sessionStorage.removeItem(DONATION_DRAFT_KEY)
+}
 
 function StepIndicator({
   step,
@@ -23,7 +60,7 @@ function StepIndicator({
   step: DonationStep
   labels: Partial<Record<DonationStep, string>>
 }) {
-  const isActive = !['idle', 'success', 'error'].includes(step)
+  const isActive = !['idle', 'pending_review', 'success', 'error'].includes(step)
   const label = labels[step] ?? ''
   if (!label) return null
 
@@ -60,21 +97,80 @@ export default function DonateModal() {
   const [name, setName] = useState('')
   const [amount, setAmount] = useState('')
   const [connectError, setConnectError] = useState('')
+  const [formError, setFormError] = useState('')
+  const [draftRestored, setDraftRestored] = useState(false)
 
-  // Reset form when modal closes
+  useEffect(() => {
+    const draft = readDonationDraft()
+    if (!draft) return
+
+    setName(draft.name)
+    setAmount(draft.amount)
+    setView(draft.view)
+
+    if (draft.resumeOnReload) {
+      setDraftRestored(true)
+      setShowDonateModal(true)
+    }
+  }, [setShowDonateModal])
+
+  // Reset transient request state when modal closes, but keep the draft.
   useEffect(() => {
     if (!showDonateModal) {
-      setTimeout(() => {
-        setView('prompt')
-        setName('')
-        setAmount('')
+      const timer = window.setTimeout(() => {
         setConnectError('')
+        setFormError('')
         reset()
       }, 400)
+
+      return () => window.clearTimeout(timer)
     }
   }, [showDonateModal, reset])
 
-  const handleClose = () => setShowDonateModal(false)
+  useEffect(() => {
+    if (state.step === 'success' || state.step === 'pending_review') {
+      clearDonationDraft()
+    }
+  }, [state.step])
+
+  useEffect(() => {
+    const hasDraftContent = Boolean(name.trim() || amount || view === 'form' || showDonateModal)
+    if (!hasDraftContent) return
+
+    writeDonationDraft({
+      name,
+      amount,
+      view,
+      resumeOnReload:
+        showDonateModal && !['success', 'pending_review'].includes(state.step),
+    })
+  }, [amount, name, showDonateModal, state.step, view])
+
+  const resetDraftState = () => {
+    setView('prompt')
+    setName('')
+    setAmount('')
+    setConnectError('')
+    setFormError('')
+    setDraftRestored(false)
+    clearDonationDraft()
+    reset()
+  }
+
+  const handleClose = (options?: { clearDraft?: boolean }) => {
+    if (options?.clearDraft) {
+      resetDraftState()
+    } else {
+      writeDonationDraft({
+        name,
+        amount,
+        view,
+        resumeOnReload: false,
+      })
+    }
+
+    setShowDonateModal(false)
+  }
 
   const connectWallet = async () => {
     setConnectError('')
@@ -105,16 +201,29 @@ export default function DonateModal() {
   }
 
   const handleDonate = async () => {
-    if (!name.trim() || !amount) return
+    const parsedAmount = Number(amount)
+
+    setFormError('')
+    if (!name.trim()) return
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setFormError(copy.donate.invalidAmount)
+      return
+    }
+
     if (!isConnected) {
       await connectWallet()
       return
     }
-    await donate(name.trim(), parseFloat(amount))
+
+    await donate(name.trim(), parsedAmount)
   }
 
   const isProcessing =
-    isConnectingWallet || !['idle', 'error', 'success'].includes(state.step)
+    isConnectingWallet || !['idle', 'pending_review', 'error', 'success'].includes(state.step)
+  const parsedAmount = Number(amount)
+  const canSubmit = Boolean(name.trim()) && Number.isFinite(parsedAmount) && parsedAmount > 0 && !isProcessing
+  const handleDismiss = () =>
+    handleClose({ clearDraft: state.step === 'success' || state.step === 'pending_review' })
 
   return (
     <AnimatePresence>
@@ -128,7 +237,7 @@ export default function DonateModal() {
           {/* Backdrop */}
           <motion.div
             className="absolute inset-0 bg-space-black/90 backdrop-blur-sm"
-            onClick={!isProcessing ? handleClose : undefined}
+            onClick={!isProcessing ? handleDismiss : undefined}
           />
 
           {/* Modal */}
@@ -154,7 +263,7 @@ export default function DonateModal() {
 
             {/* Close */}
             {!isProcessing && (
-              <button onClick={handleClose} className="absolute top-4 right-4 text-metal-light opacity-50 hover:opacity-100 z-10">
+              <button onClick={handleDismiss} className="absolute top-4 right-4 text-metal-light opacity-50 hover:opacity-100 z-10">
                 <X size={18} />
               </button>
             )}
@@ -247,12 +356,33 @@ export default function DonateModal() {
                 </div>
               )}
 
+              {draftRestored && state.step === 'idle' && (
+                <div
+                  className="px-3 py-2 rounded-lg"
+                  style={{ background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.18)' }}
+                >
+                  <span className="font-mono text-[11px] text-plasma-cyan">{copy.donate.draftRestored}</span>
+                </div>
+              )}
+
+              {formError && state.step === 'idle' && (
+                <div
+                  className="px-3 py-2 rounded-lg"
+                  style={{ background: 'rgba(255,77,0,0.08)', border: '1px solid rgba(255,77,0,0.22)' }}
+                >
+                  <span className="font-mono text-[11px] text-ignite-orange">{formError}</span>
+                </div>
+              )}
+
               <AnimatePresence mode="wait">
                 {/* ── Prompt view ── */}
                 {view === 'prompt' && state.step === 'idle' && (
                   <motion.div key="prompt" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
                     <button
-                      onClick={() => setView('form')}
+                      onClick={() => {
+                        setFormError('')
+                        setView('form')
+                      }}
                       className="w-full py-3.5 rounded-xl font-display font-bold text-white uppercase tracking-widest"
                       style={{
                         background: 'linear-gradient(135deg, #FF4D00, #FF8C00)',
@@ -264,7 +394,7 @@ export default function DonateModal() {
                       <Trophy size={15} className="inline mr-2" />
                       {copy.donate.joinBoard} →
                     </button>
-                    <button onClick={handleClose} className="w-full py-2 font-mono text-xs text-metal-light opacity-40 hover:opacity-70">
+                    <button onClick={handleDismiss} className="w-full py-2 font-mono text-xs text-metal-light opacity-40 hover:opacity-70">
                       {copy.donate.maybeLater}
                     </button>
                   </motion.div>
@@ -280,7 +410,11 @@ export default function DonateModal() {
                       </label>
                       <input
                         value={name}
-                        onChange={(e) => setName(e.target.value.slice(0, 20))}
+                        onChange={(e) => {
+                          setFormError('')
+                          setDraftRestored(false)
+                          setName(e.target.value.slice(0, 20))
+                        }}
                         placeholder={copy.donate.namePlaceholder}
                         className="w-full px-4 py-2.5 rounded-lg font-mono text-sm text-metal-light bg-transparent outline-none"
                         style={{ border: '1px solid rgba(0,212,255,0.25)', background: 'rgba(0,212,255,0.04)' }}
@@ -298,7 +432,11 @@ export default function DonateModal() {
                         {QUICK_AMOUNTS.map((a) => (
                           <button
                             key={a}
-                            onClick={() => setAmount(String(a))}
+                            onClick={() => {
+                              setFormError('')
+                              setDraftRestored(false)
+                              setAmount(String(a))
+                            }}
                             className="flex-1 py-1.5 rounded font-mono text-xs transition-all"
                             style={{
                               border: `1px solid ${amount === String(a) ? '#FF8C00' : 'rgba(255,140,0,0.18)'}`,
@@ -313,7 +451,11 @@ export default function DonateModal() {
                       <input
                         type="number"
                         value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
+                        onChange={(e) => {
+                          setFormError('')
+                          setDraftRestored(false)
+                          setAmount(e.target.value)
+                        }}
                         placeholder={copy.donate.customAmount}
                         className="w-full px-4 py-2.5 rounded-lg font-mono text-sm text-metal-light bg-transparent outline-none"
                         style={{ border: '1px solid rgba(255,140,0,0.25)', background: 'rgba(255,140,0,0.04)' }}
@@ -324,11 +466,11 @@ export default function DonateModal() {
                     {/* Submit */}
                     <button
                       onClick={handleDonate}
-                      disabled={!name.trim() || !amount}
+                      disabled={!canSubmit}
                       className="w-full py-3.5 rounded-xl font-display font-bold text-white uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{
-                        background: name.trim() && amount ? 'linear-gradient(135deg, #FF4D00, #FF8C00)' : '#1a2a40',
-                        boxShadow: name.trim() && amount ? '0 0 25px rgba(255,77,0,0.4)' : 'none',
+                        background: canSubmit ? 'linear-gradient(135deg, #FF4D00, #FF8C00)' : '#1a2a40',
+                        boxShadow: canSubmit ? '0 0 25px rgba(255,77,0,0.4)' : 'none',
                         letterSpacing: '0.1em',
                       }}
                     >
@@ -396,11 +538,55 @@ export default function DonateModal() {
                       </a>
                     )}
                     <button
-                      onClick={handleClose}
+                      onClick={() => handleClose({ clearDraft: true })}
                       className="w-full py-2.5 rounded-xl font-mono text-sm mt-2"
                       style={{ border: '1px solid rgba(0,212,255,0.3)', color: '#00D4FF' }}
                     >
                       {copy.donate.close}
+                    </button>
+                  </motion.div>
+                )}
+
+                {/* ── Pending review state ── */}
+                {state.step === 'pending_review' && (
+                  <motion.div
+                    key="pending-review"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-4 space-y-3"
+                  >
+                    <div
+                      className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
+                      style={{ background: 'rgba(255, 140, 0, 0.12)', border: '1px solid rgba(255, 140, 0, 0.25)' }}
+                    >
+                      <AlertTriangle size={24} className="text-ignite-amber" />
+                    </div>
+                    <div
+                      className="font-display text-xl font-bold"
+                      style={{ color: '#FFD700', textShadow: '0 0 20px rgba(255,215,0,0.35)' }}
+                    >
+                      {copy.donate.pendingTitle}
+                    </div>
+                    <p className="font-body text-sm text-metal-light opacity-70">
+                      {state.infoMsg ?? copy.donate.pendingBody}
+                    </p>
+                    {state.confirmedTxHash && (
+                      <a
+                        href={`https://bscscan.com/tx/${state.confirmedTxHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 font-mono text-xs text-plasma-cyan"
+                      >
+                        <ExternalLink size={11} />
+                        {copy.donate.viewProof}
+                      </a>
+                    )}
+                    <button
+                      onClick={() => handleClose({ clearDraft: true })}
+                      className="w-full py-2.5 rounded-xl font-mono text-sm mt-2"
+                      style={{ border: '1px solid rgba(255,140,0,0.3)', color: '#FFB347' }}
+                    >
+                      {copy.donate.pendingClose}
                     </button>
                   </motion.div>
                 )}

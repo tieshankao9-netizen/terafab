@@ -99,7 +99,6 @@ export default function LaunchButton() {
               hasVoted: true,
               totalLikes,
               energyPercent: energyPercentFromServer,
-              showDonateModal: false,
               hasLaunched: result.launchTriggered ?? launchedState,
               launchPhase:
                 result.launchTriggered ?? launchedState

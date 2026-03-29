@@ -67,7 +67,7 @@ export async function submitDonationPending(data: {
   name: string
   amount: number
   tx_hash: string
-}): Promise<{ success: boolean; id?: number; message: string }> {
+}): Promise<{ success: boolean; id?: number; confirmed?: boolean; message: string }> {
   return apiFetch('/api/donations/pending', {
     method: 'POST',
     body: JSON.stringify(data),

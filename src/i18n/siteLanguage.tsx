@@ -148,6 +148,12 @@ const SITE_COPY = {
       airdropHintTitle: 'Possible Future NFT Perk',
       airdropHintBody:
         'Verified on-chain supporters may be included in future commemorative NFT or community airdrop snapshot experiments. This is a possibility, not a promise.',
+      draftRestored: 'Your draft was restored so you can continue from where you left off.',
+      pendingTitle: 'Transfer Received, Board Entry Pending',
+      pendingBody:
+        'Your transaction receipt is saved. The board entry is waiting for on-chain verification and will be checked again automatically.',
+      pendingClose: 'Close for now',
+      invalidAmount: 'Enter a valid support amount greater than 0.',
       walletConnectHint:
         'Browser wallet mode is active. Set `VITE_WALLETCONNECT_PROJECT_ID` to enable WalletConnect.',
       joinBoard: 'Join the board',
@@ -295,6 +301,13 @@ const SITE_COPY = {
       airdropHintTitle: 'Avantage NFT Eventuel',
       airdropHintBody:
         'Les soutiens verifies on-chain pourront etre inclus dans de futurs snapshots NFT commemoratifs ou tests de largage communautaire. Cest une possibilite, pas une promesse.',
+      draftRestored:
+        'Votre brouillon a ete restaure pour que vous puissiez reprendre la ou vous vous etiez arrete.',
+      pendingTitle: 'Transfert Recu, Entree En Attente',
+      pendingBody:
+        'Votre preuve de transaction est enregistree. Lentree dans le tableau attend encore une verification on-chain et sera reverifiee automatiquement.',
+      pendingClose: 'Fermer pour le moment',
+      invalidAmount: 'Entrez un montant valide superieur a 0.',
       walletConnectHint:
         'Le mode wallet navigateur est actif. Definissez `VITE_WALLETCONNECT_PROJECT_ID` pour activer WalletConnect.',
       joinBoard: 'Rejoindre le tableau',
@@ -437,6 +450,12 @@ const SITE_COPY = {
       airdropHintTitle: '未来 NFT / 空投可能性',
       airdropHintBody:
         '已验证的链上支持者，未来可能会被纳入纪念 NFT 空投快照或社区空投实验名单。这是可能性，不是承诺。',
+      draftRestored: '你刚才填写的草稿已经恢复，可以直接继续。',
+      pendingTitle: '转账已记录，待链上复核',
+      pendingBody:
+        '你的交易凭证已经保存，但光荣榜入榜还在等待链上复核。系统和后台都会继续自动复核。',
+      pendingClose: '先关闭',
+      invalidAmount: '请输入大于 0 的有效支持金额。',
       walletConnectHint:
         '当前为浏览器钱包直连模式；如需 WalletConnect，请配置 `VITE_WALLETCONNECT_PROJECT_ID`。',
       joinBoard: '进入光荣榜',

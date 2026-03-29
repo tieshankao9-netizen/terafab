@@ -87,3 +87,37 @@ export interface PublicConfig {
 export async function fetchPublicConfig(): Promise<PublicConfig> {
   return apiFetch<PublicConfig>('/api/config/public')
 }
+
+const trackedVisitKeys = new Set<string>()
+
+export async function trackVisitorVisit(pathname = '/'): Promise<void> {
+  if (typeof window === 'undefined') return
+
+  const today = new Date().toISOString().slice(0, 10)
+  const storageKey = `terafab_visit_logged:${pathname}:${today}`
+  if (trackedVisitKeys.has(storageKey)) return
+
+  if (window.sessionStorage.getItem(storageKey)) {
+    trackedVisitKeys.add(storageKey)
+    return
+  }
+
+  trackedVisitKeys.add(storageKey)
+  window.sessionStorage.setItem(storageKey, '1')
+
+  try {
+    const fingerprint = await getBrowserFingerprint().catch(() => '')
+    await apiFetch<{ success: boolean }>('/api/analytics/visit', {
+      method: 'POST',
+      keepalive: true,
+      body: JSON.stringify({
+        path: pathname,
+        referrer: document.referrer || '',
+        fingerprint,
+      }),
+    })
+  } catch {
+    trackedVisitKeys.delete(storageKey)
+    window.sessionStorage.removeItem(storageKey)
+  }
+}

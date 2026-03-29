@@ -11,7 +11,7 @@ import HomePage from '@/pages/HomePage'
 import AdminPage from '@/pages/AdminPage'
 import { useSocket } from '@/hooks/useSocket'
 import { useGameStore } from '@/hooks/useGameStore'
-import { fetchLikesTotal } from '@/utils/api'
+import { fetchLikesTotal, trackVisitorVisit } from '@/utils/api'
 
 function AppInner() {
   const { setInitialState, setServerConnected } = useGameStore()
@@ -38,6 +38,11 @@ function AppInner() {
         useGameStore.setState({ isLoadingInitial: false })
       })
   }, [isAdmin, setInitialState, setServerConnected])
+
+  useEffect(() => {
+    if (isAdmin) return
+    void trackVisitorVisit(window.location.pathname)
+  }, [isAdmin])
 
   // Admin route
   if (isAdmin) return <AdminPage />

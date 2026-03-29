@@ -122,6 +122,45 @@ export interface AdminStats {
   likesToLaunch: number
 }
 
+export interface VisitorOverview {
+  todayUniqueVisitors: number
+  todayTotalVisits: number
+  last7DaysUniqueVisitors: number
+  last7DaysTotalVisits: number
+  topCountryCode: string
+  topCountryName: string
+}
+
+export interface VisitorDailyStat {
+  visit_date: string
+  unique_visitors: number
+  total_visits: number
+}
+
+export interface VisitorCountryStat {
+  country_code: string
+  country_name: string
+  unique_visitors: number
+  total_visits: number
+}
+
+export interface RecentVisitorRecord {
+  id: number
+  visit_date: string
+  ip_address: string
+  user_agent: string | null
+  device_type: string
+  country_code: string
+  country_name: string
+  region: string | null
+  city: string | null
+  path: string
+  referrer: string | null
+  hit_count: number
+  first_seen_at: string
+  last_seen_at: string
+}
+
 export interface LikeRecord {
   id: number
   ip_fingerprint: string
@@ -158,6 +197,15 @@ export async function adminGetLikes(limit = 100, offset = 0): Promise<{
 
 export async function adminGetStats(): Promise<AdminStats> {
   return adminFetch<AdminStats>('/api/likes/total')
+}
+
+export async function adminGetVisitorAnalytics(days = 14): Promise<{
+  overview: VisitorOverview
+  daily: VisitorDailyStat[]
+  countries: VisitorCountryStat[]
+  recent: RecentVisitorRecord[]
+}> {
+  return adminFetch(`/api/admin/visitors?days=${days}`)
 }
 
 export async function adminGetAllDonations(): Promise<{ donations: AdminDonation[] }> {

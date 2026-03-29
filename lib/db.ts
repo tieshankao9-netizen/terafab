@@ -58,6 +58,37 @@ export async function ensureSchema() {
       `
 
       await sql`
+        CREATE TABLE IF NOT EXISTS visits (
+          id BIGSERIAL PRIMARY KEY,
+          visitor_key TEXT NOT NULL,
+          visit_date DATE NOT NULL DEFAULT CURRENT_DATE,
+          ip_address TEXT NOT NULL,
+          user_agent TEXT,
+          device_type TEXT NOT NULL DEFAULT 'Desktop',
+          country_code TEXT NOT NULL DEFAULT 'ZZ',
+          country_name TEXT NOT NULL DEFAULT 'Unknown',
+          region TEXT,
+          city TEXT,
+          path TEXT NOT NULL DEFAULT '/',
+          referrer TEXT,
+          hit_count INTEGER NOT NULL DEFAULT 1,
+          first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          UNIQUE (visitor_key, visit_date)
+        )
+      `
+
+      await sql`
+        CREATE INDEX IF NOT EXISTS visits_visit_date_idx
+        ON visits (visit_date DESC)
+      `
+
+      await sql`
+        CREATE INDEX IF NOT EXISTS visits_country_date_idx
+        ON visits (country_code, visit_date DESC)
+      `
+
+      await sql`
         INSERT INTO config (key, value)
         VALUES
           ('total_likes', '0'),

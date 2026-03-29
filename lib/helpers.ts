@@ -21,6 +21,19 @@ export function isValidAddress(address: string): boolean {
   return /^0x[0-9a-fA-F]{40}$/.test(address)
 }
 
+export function buildStableHash(...parts: string[]) {
+  const salt = process.env.FINGERPRINT_SALT ?? 'terafab_vercel_salt_2026'
+  const hash = crypto.createHash('sha256')
+
+  parts.forEach((part) => {
+    hash.update(part)
+    hash.update('|')
+  })
+
+  hash.update(salt)
+  return hash.digest('hex')
+}
+
 export function getClientIp(request: Request): string {
   const headers = request.headers
   const cfIp = headers.get('cf-connecting-ip')
@@ -39,6 +52,5 @@ export function getClientIp(request: Request): string {
 }
 
 export function buildFingerprint(ip: string, userAgent: string) {
-  const salt = process.env.FINGERPRINT_SALT ?? 'terafab_vercel_salt_2026'
-  return crypto.createHash('sha256').update(`${ip}|${userAgent}|${salt}`).digest('hex')
+  return buildStableHash(ip, userAgent)
 }

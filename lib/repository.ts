@@ -27,6 +27,82 @@ export interface DonationRecord {
   created_at: string
 }
 
+export interface VisitorRecord {
+  id: number
+  visit_date: string
+  ip_address: string
+  user_agent: string | null
+  device_type: string
+  country_code: string
+  country_name: string
+  region: string | null
+  city: string | null
+  path: string
+  referrer: string | null
+  hit_count: number
+  first_seen_at: string
+  last_seen_at: string
+}
+
+export interface VisitorDailyStat {
+  visit_date: string
+  unique_visitors: number
+  total_visits: number
+}
+
+export interface VisitorCountryStat {
+  country_code: string
+  country_name: string
+  unique_visitors: number
+  total_visits: number
+}
+
+export interface VisitorAnalyticsOverview {
+  todayUniqueVisitors: number
+  todayTotalVisits: number
+  last7DaysUniqueVisitors: number
+  last7DaysTotalVisits: number
+  topCountryCode: string
+  topCountryName: string
+}
+
+export interface VisitorAnalyticsSnapshot {
+  overview: VisitorAnalyticsOverview
+  daily: VisitorDailyStat[]
+  countries: VisitorCountryStat[]
+  recent: VisitorRecord[]
+}
+
+interface VisitorDailyRow {
+  visit_date: string
+  unique_visitors: string | number
+  total_visits: string | number
+}
+
+interface VisitorCountryRow {
+  country_code: string
+  country_name: string
+  unique_visitors: string | number
+  total_visits: string | number
+}
+
+interface VisitorRecentRow extends Omit<VisitorRecord, 'hit_count'> {
+  hit_count: string | number
+}
+
+interface VisitorOverviewRow {
+  today_unique_visitors: string | number
+  today_total_visits: string | number
+  last7_days_unique_visitors: string | number
+  last7_days_total_visits: string | number
+}
+
+function toIsoDate(daysAgo = 0) {
+  const date = new Date()
+  date.setUTCDate(date.getUTCDate() - daysAgo)
+  return date.toISOString().slice(0, 10)
+}
+
 export async function getConfig(key: string) {
   await ensureSchema()
   const sql = getSql()
@@ -280,4 +356,176 @@ export async function getPendingDonations(limit = 20) {
   ` as Array<DonationRecord & { amount: string }>
 
   return rows.map((row) => ({ ...row, amount: Number(row.amount) }))
+}
+
+export async function recordVisit(input: {
+  visitorKey: string
+  ipAddress: string
+  userAgent: string
+  deviceType: string
+  countryCode: string
+  countryName: string
+  region?: string | null
+  city?: string | null
+  path: string
+  referrer?: string | null
+}) {
+  await ensureSchema()
+  const sql = getSql()
+
+  await sql`
+    INSERT INTO visits (
+      visitor_key,
+      visit_date,
+      ip_address,
+      user_agent,
+      device_type,
+      country_code,
+      country_name,
+      region,
+      city,
+      path,
+      referrer,
+      hit_count,
+      first_seen_at,
+      last_seen_at
+    )
+    VALUES (
+      ${input.visitorKey},
+      CURRENT_DATE,
+      ${input.ipAddress},
+      ${input.userAgent || null},
+      ${input.deviceType},
+      ${input.countryCode},
+      ${input.countryName},
+      ${input.region ?? null},
+      ${input.city ?? null},
+      ${input.path},
+      ${input.referrer ?? null},
+      1,
+      NOW(),
+      NOW()
+    )
+    ON CONFLICT (visitor_key, visit_date)
+    DO UPDATE SET
+      ip_address = EXCLUDED.ip_address,
+      user_agent = COALESCE(EXCLUDED.user_agent, visits.user_agent),
+      device_type = EXCLUDED.device_type,
+      country_code = CASE
+        WHEN visits.country_code = 'ZZ' AND EXCLUDED.country_code <> 'ZZ'
+          THEN EXCLUDED.country_code
+        ELSE visits.country_code
+      END,
+      country_name = CASE
+        WHEN visits.country_name = 'Unknown' AND EXCLUDED.country_name <> 'Unknown'
+          THEN EXCLUDED.country_name
+        ELSE visits.country_name
+      END,
+      region = COALESCE(EXCLUDED.region, visits.region),
+      city = COALESCE(EXCLUDED.city, visits.city),
+      path = EXCLUDED.path,
+      referrer = COALESCE(EXCLUDED.referrer, visits.referrer),
+      hit_count = visits.hit_count + 1,
+      last_seen_at = NOW()
+  `
+}
+
+export async function getVisitorAnalytics(
+  days = 14,
+  recentLimit = 25,
+): Promise<VisitorAnalyticsSnapshot> {
+  await ensureSchema()
+  const sql = getSql()
+  const safeDays = Math.min(Math.max(days, 1), 90)
+  const recentDaysCutoff = toIsoDate(safeDays - 1)
+  const last7DaysCutoff = toIsoDate(6)
+  const today = toIsoDate(0)
+
+  const dailyRows = await sql`
+    SELECT
+      visit_date::text,
+      COUNT(*)::int AS unique_visitors,
+      COALESCE(SUM(hit_count), 0)::int AS total_visits
+    FROM visits
+    WHERE visit_date >= ${recentDaysCutoff}
+    GROUP BY visit_date
+    ORDER BY visit_date ASC
+  ` as VisitorDailyRow[]
+
+  const countryRows = await sql`
+    SELECT
+      country_code,
+      country_name,
+      COUNT(*)::int AS unique_visitors,
+      COALESCE(SUM(hit_count), 0)::int AS total_visits
+    FROM visits
+    WHERE visit_date >= ${recentDaysCutoff}
+    GROUP BY country_code, country_name
+    ORDER BY COUNT(*) DESC, COALESCE(SUM(hit_count), 0) DESC, country_name ASC
+    LIMIT 20
+  ` as VisitorCountryRow[]
+
+  const recentRows = await sql`
+    SELECT
+      id,
+      visit_date::text,
+      ip_address,
+      user_agent,
+      device_type,
+      country_code,
+      country_name,
+      region,
+      city,
+      path,
+      referrer,
+      hit_count,
+      first_seen_at::text,
+      last_seen_at::text
+    FROM visits
+    ORDER BY last_seen_at DESC
+    LIMIT ${recentLimit}
+  ` as VisitorRecentRow[]
+
+  const overviewRows = await sql`
+    SELECT
+      COALESCE(SUM(CASE WHEN visit_date = ${today} THEN 1 ELSE 0 END), 0)::int AS today_unique_visitors,
+      COALESCE(SUM(CASE WHEN visit_date = ${today} THEN hit_count ELSE 0 END), 0)::int AS today_total_visits,
+      COALESCE(SUM(CASE WHEN visit_date >= ${last7DaysCutoff} THEN 1 ELSE 0 END), 0)::int AS last7_days_unique_visitors,
+      COALESCE(SUM(CASE WHEN visit_date >= ${last7DaysCutoff} THEN hit_count ELSE 0 END), 0)::int AS last7_days_total_visits
+    FROM visits
+  ` as VisitorOverviewRow[]
+
+  const mappedDaily = dailyRows.map((row) => ({
+    ...row,
+    unique_visitors: Number(row.unique_visitors),
+    total_visits: Number(row.total_visits),
+  }))
+
+  const mappedCountries = countryRows.map((row) => ({
+    ...row,
+    unique_visitors: Number(row.unique_visitors),
+    total_visits: Number(row.total_visits),
+  }))
+
+  const mappedRecent = recentRows.map((row) => ({
+    ...row,
+    hit_count: Number(row.hit_count),
+  }))
+
+  const overviewRow = overviewRows[0]
+  const topCountry = mappedCountries[0]
+
+  return {
+    overview: {
+      todayUniqueVisitors: Number(overviewRow?.today_unique_visitors ?? 0),
+      todayTotalVisits: Number(overviewRow?.today_total_visits ?? 0),
+      last7DaysUniqueVisitors: Number(overviewRow?.last7_days_unique_visitors ?? 0),
+      last7DaysTotalVisits: Number(overviewRow?.last7_days_total_visits ?? 0),
+      topCountryCode: topCountry?.country_code ?? 'ZZ',
+      topCountryName: topCountry?.country_name ?? 'Unknown',
+    },
+    daily: mappedDaily,
+    countries: mappedCountries,
+    recent: mappedRecent,
+  }
 }

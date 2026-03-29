@@ -10,6 +10,7 @@ import AdminSidebar, { AdminTab } from '@/components/admin/AdminSidebar'
 import AdminDashboard from '@/components/admin/AdminDashboard'
 import AdminLikes from '@/components/admin/AdminLikes'
 import AdminDonations from '@/components/admin/AdminDonations'
+import AdminVisitors from '@/components/admin/AdminVisitors'
 import AdminConfig from '@/components/admin/AdminConfig'
 import { hasAdminSession, clearAdminToken } from '@/utils/adminApi'
 
@@ -92,6 +93,7 @@ export default function AdminPage() {
               {activeTab === 'dashboard' && 'Mission Dashboard'}
               {activeTab === 'likes' && 'Like Records'}
               {activeTab === 'donations' && 'Donation Management'}
+              {activeTab === 'visitors' && 'Visitor Analytics'}
               {activeTab === 'config' && 'System Configuration'}
             </span>
           </div>
@@ -111,6 +113,7 @@ export default function AdminPage() {
               {activeTab === 'dashboard' && <AdminDashboard />}
               {activeTab === 'likes' && <AdminLikes />}
               {activeTab === 'donations' && <AdminDonations />}
+              {activeTab === 'visitors' && <AdminVisitors />}
               {activeTab === 'config' && <AdminConfig />}
             </motion.div>
           </AnimatePresence>

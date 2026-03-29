@@ -11,10 +11,11 @@ import {
   LogOut,
   Rocket,
   ChevronRight,
+  Globe2,
 } from 'lucide-react'
 import { clearAdminToken } from '@/utils/adminApi'
 
-export type AdminTab = 'dashboard' | 'likes' | 'donations' | 'config'
+export type AdminTab = 'dashboard' | 'likes' | 'donations' | 'visitors' | 'config'
 
 interface Props {
   activeTab: AdminTab
@@ -26,6 +27,7 @@ const NAV_ITEMS: { id: AdminTab; label: string; icon: React.ReactNode; desc: str
   { id: 'dashboard', label: '总览', icon: <LayoutDashboard size={16} />, desc: 'Mission Status' },
   { id: 'likes',     label: '点赞记录', icon: <ThumbsUp size={16} />, desc: 'Like Records' },
   { id: 'donations', label: '捐款管理', icon: <Trophy size={16} />, desc: 'Donations' },
+  { id: 'visitors',  label: '访客分析', icon: <Globe2 size={16} />, desc: 'Visitor Analytics' },
   { id: 'config',    label: '系统配置', icon: <Settings size={16} />, desc: 'Config' },
 ]
 

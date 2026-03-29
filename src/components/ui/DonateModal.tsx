@@ -196,6 +196,21 @@ export default function DonateModal() {
                 </p>
               </div>
 
+              <div
+                className="rounded-xl px-3 py-3"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255, 140, 0, 0.08), rgba(255, 215, 0, 0.05))',
+                  border: '1px solid rgba(255, 140, 0, 0.2)',
+                }}
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-ignite-orange opacity-80">
+                  {copy.donate.airdropHintTitle}
+                </div>
+                <p className="mt-2 font-body text-xs leading-relaxed text-metal-light opacity-72">
+                  {copy.donate.airdropHintBody}
+                </p>
+              </div>
+
               {/* Wallet status */}
               {isConnected && address && (
                 <div

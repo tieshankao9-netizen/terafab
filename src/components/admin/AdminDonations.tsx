@@ -227,6 +227,7 @@ export default function AdminDonations() {
 
   const totalUSDT = donations.filter((d) => d.status === 1).reduce((s, d) => s + d.amount, 0)
   const pendingCount = donations.filter((d) => d.status === 0).length
+  const pendingDonations = donations.filter((d) => d.status === 0)
 
   return (
     <div className="space-y-5">
@@ -292,6 +293,140 @@ export default function AdminDonations() {
           <span className="font-mono text-xs text-metal-light opacity-80">{feedback.msg}</span>
         </div>
       )}
+
+      <motion.div
+        className="rounded-2xl overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, rgba(255,140,0,0.08), rgba(10,21,37,0.96))',
+          border: '1px solid rgba(255,140,0,0.18)',
+          boxShadow: '0 0 30px rgba(255,140,0,0.08)',
+        }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+          style={{ borderBottom: '1px solid rgba(255,140,0,0.12)' }}
+        >
+          <div>
+            <div className="font-display text-lg font-bold" style={{ color: '#FFD700' }}>
+              待链上复核
+            </div>
+            <p className="mt-1 font-mono text-[11px] text-metal-light opacity-55 leading-5">
+              这里单独显示还没自动进入支持者榜单的链上记录。点击“立即复核”可以马上重新验证收款地址、USDT 合约和金额。
+            </p>
+          </div>
+          <div
+            className="px-3 py-2 rounded-xl font-display text-lg font-bold"
+            style={{
+              background: 'rgba(255,140,0,0.12)',
+              border: '1px solid rgba(255,140,0,0.2)',
+              color: '#FF8C00',
+            }}
+          >
+            {pendingCount}
+          </div>
+        </div>
+
+        {pendingDonations.length === 0 ? (
+          <div className="px-4 py-6 font-mono text-xs text-metal-light opacity-35">
+            当前没有待链上复核的记录，新的真实捐款如果未即时确认，会优先出现在这里。
+          </div>
+        ) : (
+          <div className="grid gap-3 px-4 py-4 lg:grid-cols-2">
+            {pendingDonations.slice(0, 6).map((donation) => (
+              <div
+                key={`pending-${donation.id}`}
+                className="rounded-xl px-4 py-4"
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,140,0,0.12)',
+                }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-body text-sm text-metal-light truncate">{donation.name}</div>
+                    <div className="mt-1 font-display text-xl font-bold" style={{ color: '#FFD700' }}>
+                      {donation.amount} <span className="font-mono text-[10px] opacity-45">USDT</span>
+                    </div>
+                  </div>
+                  <span
+                    className="font-mono text-[10px] px-2 py-1 rounded-full"
+                    style={{
+                      background: 'rgba(255,140,0,0.12)',
+                      color: '#FF8C00',
+                      border: '1px solid rgba(255,140,0,0.22)',
+                    }}
+                  >
+                    待复核
+                  </span>
+                </div>
+
+                <div className="mt-3 space-y-2 font-mono text-[10px] text-metal-light opacity-45">
+                  <div>时间：{new Date(donation.created_at).toLocaleString('zh-CN')}</div>
+                  <div className="flex items-center gap-1">
+                    <span className="truncate">
+                      交易：{donation.tx_hash.startsWith('manual') ? '手动录入' : `${donation.tx_hash.slice(0, 18)}...`}
+                    </span>
+                    {!donation.tx_hash.startsWith('manual') && (
+                      <a
+                        href={`https://bscscan.com/tx/${donation.tx_hash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-plasma-cyan opacity-70 hover:opacity-100"
+                      >
+                        <ExternalLink size={11} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-4 flex gap-2">
+                  <button
+                    onClick={() => handleVerify(donation)}
+                    disabled={actionBusyId === donation.id || donation.tx_hash.startsWith('manual')}
+                    className="flex-1 rounded-lg px-3 py-2 font-mono text-xs disabled:opacity-45"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(255,140,0,0.22), rgba(255,77,0,0.18))',
+                      border: '1px solid rgba(255,140,0,0.24)',
+                      color: '#FFD700',
+                    }}
+                  >
+                    <motion.span
+                      className="inline-flex items-center gap-1.5"
+                      animate={actionBusyId === donation.id ? { opacity: [0.7, 1, 0.7] } : { opacity: 1 }}
+                      transition={{ duration: 0.9, repeat: actionBusyId === donation.id ? Infinity : 0 }}
+                    >
+                      <motion.span
+                        animate={actionBusyId === donation.id ? { rotate: 360 } : { rotate: 0 }}
+                        transition={{
+                          duration: 0.9,
+                          repeat: actionBusyId === donation.id ? Infinity : 0,
+                          ease: 'linear',
+                        }}
+                      >
+                        <RefreshCw size={12} />
+                      </motion.span>
+                      {donation.tx_hash.startsWith('manual') ? '手动记录' : '立即复核'}
+                    </motion.span>
+                  </button>
+
+                  <button
+                    onClick={() => setEditTarget(donation)}
+                    className="rounded-lg px-3 py-2 font-mono text-xs"
+                    style={{
+                      border: '1px solid rgba(0,212,255,0.18)',
+                      color: '#00D4FF',
+                    }}
+                  >
+                    编辑
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
 
       {/* Filter tabs */}
       <div className="flex gap-2">

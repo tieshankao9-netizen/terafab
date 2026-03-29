@@ -219,6 +219,43 @@ export default function HomePage() {
               <span style={{ color: '#FFD700' }}>{copy.home.nftHint}</span>
             </p>
           </motion.div>
+
+          <motion.div
+            className="mt-4 grid w-full max-w-xl gap-3 sm:grid-cols-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.78 }}
+          >
+            <div
+              className="rounded-2xl px-4 py-4"
+              style={{
+                background: 'rgba(0, 212, 255, 0.05)',
+                border: '1px solid rgba(0, 212, 255, 0.15)',
+              }}
+            >
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-plasma-cyan opacity-75">
+                {copy.home.showCardTitle}
+              </div>
+              <p className="mt-2 font-body text-sm leading-relaxed text-metal-light opacity-70">
+                {copy.home.showCardBody}
+              </p>
+            </div>
+
+            <div
+              className="rounded-2xl px-4 py-4"
+              style={{
+                background: 'rgba(255, 215, 0, 0.05)',
+                border: '1px solid rgba(255, 215, 0, 0.18)',
+              }}
+            >
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-ignite-gold opacity-80">
+                {copy.home.airdropCardTitle}
+              </div>
+              <p className="mt-2 font-body text-sm leading-relaxed text-metal-light opacity-72">
+                {copy.home.airdropCardBody}
+              </p>
+            </div>
+          </motion.div>
         </div>
 
         {/* Bottom info strip */}

@@ -27,7 +27,7 @@ const SITE_COPY = {
     meta: {
       title: 'TERAFAB — Interactive Fan Mission',
       description:
-        'Terafab.top is an interactive entertainment mission on BNB Chain. Charge the ship, join the supporter board, and verified supporters may be considered for future commemorative NFT experiments.',
+        'Terafab.top is an interactive entertainment mission on BNB Chain. Charge the ship, join the supporter board, and verified on-chain supporters may be considered for future commemorative NFT or community airdrop experiments.',
     },
     header: {
       board: 'Supporter Board',
@@ -41,14 +41,20 @@ const SITE_COPY = {
       entertainmentBadge: 'Entertainment First',
       tagline: '.TOP — THE PLAYGROUND FOR MARS FANS',
       description:
-        'Terafab is a playful fan mission. Tap once to charge the ship, trigger launch theatrics, and leave your callsign in the mission log.',
+        'Terafab is a playful fan mission built for entertainment first. Tap once to charge the ship, trigger launch theatrics, and leave your callsign in the mission log.',
       descriptionAccent:
-        'Verified supporters may be considered for future commemorative NFT drops and community airdrop experiments.',
+        'Verified on-chain supporters may be snapshotted for future commemorative NFT drops and community airdrop experiments.',
       leaderboardCta: 'View Supporter Board',
       chainBadge: 'BNB Chain · USDT support · on-chain receipts',
-      entertainmentNote: 'Built as an interactive entertainment experience, not a formal investment program.',
+      entertainmentNote:
+        'Built as an interactive entertainment experience for space fans. It is not a formal investment program.',
       nftHint:
-        'Future commemorative NFT drops or community airdrop tests may include verified supporters. Not guaranteed.',
+        'If your on-chain support is verified, you may be included in future NFT snapshot lists or community airdrop experiments. Not guaranteed.',
+      showCardTitle: 'Entertainment First',
+      showCardBody: 'Boosts, launch effects, rankings, and board moments are all part of the show.',
+      airdropCardTitle: 'Future NFT Snapshot',
+      airdropCardBody:
+        'Verified supporters may be shortlisted for commemorative NFT drops or supporter airdrop experiments in future campaigns.',
       infoDomain: 'Domain',
       infoChain: 'Chain',
       infoToken: 'Token',
@@ -136,9 +142,12 @@ const SITE_COPY = {
       energyBoost: (energyPercent: number) => `Launch energy +1% -> ${energyPercent}%`,
       title: 'The ship is almost ready!',
       body:
-        'This is a playful community mission. Support with USDT to appear on the supporter board and fuel the show.',
+        'This is a playful community entertainment mission. Support with USDT to appear on the supporter board and fuel the show.',
       entertainmentNote:
-        'Entertainment-first project. Verified supporters may be considered for future commemorative NFT or airdrop experiments.',
+        'Entertainment-first project. Your support powers the experience, the visuals, and the public supporter board.',
+      airdropHintTitle: 'Possible Future NFT Perk',
+      airdropHintBody:
+        'Verified on-chain supporters may be included in future commemorative NFT or community airdrop snapshot experiments. This is a possibility, not a promise.',
       walletConnectHint:
         'Browser wallet mode is active. Set `VITE_WALLETCONNECT_PROJECT_ID` to enable WalletConnect.',
       joinBoard: 'Join the board',
@@ -153,7 +162,7 @@ const SITE_COPY = {
       viewTx: 'View on BscScan',
       successTitle: 'Board entry confirmed!',
       successBody:
-        'Your support is now on the Terafab board. Thanks for joining the fan mission.',
+        'Your support is now on the Terafab board. Keep your receipt: verified supporters may be reviewed for future NFT or airdrop experiments.',
       viewProof: 'View on-chain receipt',
       close: 'Close',
       retry: 'Try again',
@@ -164,7 +173,7 @@ const SITE_COPY = {
     meta: {
       title: 'TERAFAB — Mission Fan Interactive',
       description:
-        'Terafab.top est une experience interactive de divertissement sur BNB Chain. Chargez le vaisseau, rejoignez le tableau des soutiens, et certains soutiens verifies pourront etre consideres pour de futurs NFT commemoratifs.',
+        'Terafab.top est une experience interactive de divertissement sur BNB Chain. Chargez le vaisseau, rejoignez le tableau des soutiens, et certains soutiens verifies pourront etre consideres pour de futurs NFT commemoratifs ou tests de largage communautaire.',
     },
     header: {
       board: 'Tableau Des Soutiens',
@@ -178,15 +187,21 @@ const SITE_COPY = {
       entertainmentBadge: 'Pur Divertissement',
       tagline: '.TOP — LE TERRAIN DE JEU DES FANS DE MARS',
       description:
-        'Terafab est une mission fan ludique. Touchez une fois pour charger le vaisseau, declencher les effets de lancement et laisser votre indicatif dans le journal de mission.',
+        'Terafab est une mission fan ludique pensee avant tout comme un divertissement. Touchez une fois pour charger le vaisseau, declencher les effets de lancement et laisser votre indicatif dans le journal de mission.',
       descriptionAccent:
-        'Les soutiens verifies pourront etre pris en compte pour de futurs NFT commemoratifs et tests de largage communautaire.',
+        'Les soutiens verifies on-chain pourront etre pris en compte dans de futurs snapshots NFT commemoratifs et tests de largage communautaire.',
       leaderboardCta: 'Voir Le Tableau',
       chainBadge: 'BNB Chain · soutien USDT · preuves on-chain',
       entertainmentNote:
-        "Experience interactive de divertissement, et non programme d'investissement.",
+        "Experience interactive de divertissement pour les fans de l'espace, et non programme d'investissement.",
       nftHint:
-        'De futurs NFT commemoratifs ou tests de largage communautaire pourront inclure des soutiens verifies. Sans garantie.',
+        'Si votre soutien on-chain est verifie, il pourra etre inclus dans de futurs snapshots NFT ou tests de largage communautaire. Sans garantie.',
+      showCardTitle: 'Divertissement DAbord',
+      showCardBody:
+        'Boosts, effets de lancement, classement et moments du tableau font partie du spectacle.',
+      airdropCardTitle: 'Snapshot NFT Futur',
+      airdropCardBody:
+        'Les soutiens verifies pourront etre retenus pour de futurs NFT commemoratifs ou tests de largage reserves aux supporters.',
       infoDomain: 'Domaine',
       infoChain: 'Chaine',
       infoToken: 'Jeton',
@@ -274,9 +289,12 @@ const SITE_COPY = {
       energyBoost: (energyPercent: number) => `Energie +1% -> ${energyPercent}%`,
       title: 'Le vaisseau est presque pret !',
       body:
-        'Ceci est une mission communautaire ludique. Soutenez avec des USDT pour apparaitre dans le tableau et alimenter le show.',
+        'Ceci est une mission communautaire de divertissement. Soutenez avec des USDT pour apparaitre dans le tableau et alimenter le show.',
       entertainmentNote:
-        'Projet de divertissement. Les soutiens verifies pourront etre consideres pour de futurs NFT commemoratifs ou tests de largage.',
+        'Projet axe divertissement. Votre soutien alimente lexperience, les visuels et le tableau public des supporters.',
+      airdropHintTitle: 'Avantage NFT Eventuel',
+      airdropHintBody:
+        'Les soutiens verifies on-chain pourront etre inclus dans de futurs snapshots NFT commemoratifs ou tests de largage communautaire. Cest une possibilite, pas une promesse.',
       walletConnectHint:
         'Le mode wallet navigateur est actif. Definissez `VITE_WALLETCONNECT_PROJECT_ID` pour activer WalletConnect.',
       joinBoard: 'Rejoindre le tableau',
@@ -291,7 +309,7 @@ const SITE_COPY = {
       viewTx: 'Voir sur BscScan',
       successTitle: 'Entree confirmee !',
       successBody:
-        'Votre soutien est maintenant visible dans le tableau Terafab. Merci de rejoindre la mission fan.',
+        'Votre soutien est maintenant visible dans le tableau Terafab. Conservez votre preuve: les soutiens verifies pourront etre examines pour de futurs NFT ou tests de largage.',
       viewProof: 'Voir la preuve on-chain',
       close: 'Fermer',
       retry: 'Reessayer',
@@ -302,7 +320,7 @@ const SITE_COPY = {
     meta: {
       title: 'TERAFAB — 互动娱乐任务',
       description:
-        'Terafab.top 是一个部署在 BNB 链上的互动娱乐任务。你可以为飞船充能、进入支持者光荣榜，已验证支持者未来还有机会被纳入纪念 NFT 测试名单。',
+        'Terafab.top 是一个部署在 BNB 链上的互动娱乐任务。你可以为飞船充能、进入支持者光荣榜，已验证的链上支持者未来还有机会被纳入纪念 NFT 或社区空投实验名单。',
     },
     header: {
       board: '光荣榜',
@@ -316,13 +334,17 @@ const SITE_COPY = {
       entertainmentBadge: '娱乐体验优先',
       tagline: '.TOP — 面向火星粉丝的互动游乐场',
       description:
-        'Terafab 是一个偏娱乐向的互动粉丝任务。点一次火力，给飞船充能，触发起飞特效，并把你的代号留在任务日志里。',
+        'Terafab 是一个以娱乐体验为主的互动粉丝任务。点一次火力，给飞船充能，触发起飞特效，并把你的代号留在任务日志里。',
       descriptionAccent:
-        '已验证的支持者，未来有机会被纳入纪念 NFT 空投或社区空投测试名单。',
+        '已验证的链上支持者，未来有机会进入纪念 NFT 快照或社区空投实验名单。',
       leaderboardCta: '查看光荣榜',
       chainBadge: 'BNB 链 · USDT 支持 · 链上凭证',
-      entertainmentNote: '这是一个互动娱乐体验，不是正式投资项目。',
-      nftHint: '未来的纪念 NFT 或社区空投测试，可能会优先考虑已验证支持者，但不作保证。',
+      entertainmentNote: '这是一个面向太空爱好者的互动娱乐体验，不是正式投资项目。',
+      nftHint: '如果你的链上支持被验证，未来可能会被纳入纪念 NFT 快照或社区空投实验名单，但不作保证。',
+      showCardTitle: '娱乐体验优先',
+      showCardBody: '点赞、点火特效、榜单展示和任务节奏，本质上都是这场互动秀的一部分。',
+      airdropCardTitle: '未来 NFT 快照',
+      airdropCardBody: '已验证支持者未来可能进入纪念 NFT 空投或支持者专属空投实验名单，用于后续活动快照。',
       infoDomain: '域名',
       infoChain: '区块链',
       infoToken: '代币',
@@ -409,9 +431,12 @@ const SITE_COPY = {
       energyBoost: (energyPercent: number) => `点火能量 +1% -> ${energyPercent}%`,
       title: '飞船蓄势待发！',
       body:
-        '这是一个偏娱乐向的社区互动任务。你可以用 USDT 支持 Terafab，并把名字写进支持者光荣榜。',
+        '这是一个偏娱乐向的社区互动任务。你可以用 USDT 支持 Terafab，把名字写进支持者光荣榜，并为整场互动秀加一把火。',
       entertainmentNote:
-        '已验证的支持者，未来可能会被纳入纪念 NFT 或社区空投测试名单，但不作保证。',
+        '这是一个娱乐优先项目，你的支持会直接推动页面演出、视觉效果和公开支持者榜单。',
+      airdropHintTitle: '未来 NFT / 空投可能性',
+      airdropHintBody:
+        '已验证的链上支持者，未来可能会被纳入纪念 NFT 空投快照或社区空投实验名单。这是可能性，不是承诺。',
       walletConnectHint:
         '当前为浏览器钱包直连模式；如需 WalletConnect，请配置 `VITE_WALLETCONNECT_PROJECT_ID`。',
       joinBoard: '进入光荣榜',
@@ -425,7 +450,7 @@ const SITE_COPY = {
       back: '返回',
       viewTx: '在 BscScan 查看交易',
       successTitle: '已成功上榜！',
-      successBody: '你的支持已经写入 Terafab 光荣榜，感谢加入这场娱乐向任务。',
+      successBody: '你的支持已经写入 Terafab 光荣榜。请保留交易凭证，已验证支持者未来可能会被纳入 NFT 或空投实验名单。',
       viewProof: '查看链上凭证',
       close: '关闭',
       retry: '重试',

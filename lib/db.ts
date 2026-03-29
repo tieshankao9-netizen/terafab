@@ -4,7 +4,7 @@ let schemaPromise: Promise<void> | null = null
 let client: ReturnType<typeof neon> | null = null
 
 const DEFAULT_SITE_DESCRIPTION =
-  'Interactive fan mission on BNB Chain with supporter board and commemorative NFT experiments.'
+  'Interactive fan mission on BNB Chain with supporter board, entertainment-first launch play, and future NFT or community airdrop experiments for verified supporters.'
 const LEGACY_SITE_DESCRIPTION = '点燃火星征程 · BNB链USDT捐赠'
 
 function getDatabaseUrl() {

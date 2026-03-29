@@ -10,7 +10,7 @@ export async function getPublicConfigPayload() {
     siteName: (await getConfig('site_name')) ?? 'Terafab',
     siteDescription:
       (await getConfig('site_description')) ??
-      'Interactive fan mission on BNB Chain with supporter board and commemorative NFT experiments.',
+      'Interactive fan mission on BNB Chain with supporter board, entertainment-first launch play, and future NFT or community airdrop experiments for verified supporters.',
     totalLikes,
     likesToLaunch,
     energyPercent,

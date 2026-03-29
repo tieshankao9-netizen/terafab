@@ -205,7 +205,7 @@ export async function adminGetVisitorAnalytics(days = 14): Promise<{
   countries: VisitorCountryStat[]
   recent: RecentVisitorRecord[]
 }> {
-  return adminFetch(`/api/admin/visitors?days=${days}`)
+  return adminFetch(`/api/admin/likes?view=visitors&days=${days}`)
 }
 
 export async function adminGetAllDonations(): Promise<{ donations: AdminDonation[] }> {

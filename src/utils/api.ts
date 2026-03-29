@@ -107,7 +107,7 @@ export async function trackVisitorVisit(pathname = '/'): Promise<void> {
 
   try {
     const fingerprint = await getBrowserFingerprint().catch(() => '')
-    await apiFetch<{ success: boolean }>('/api/analytics/visit', {
+    await apiFetch<{ success: boolean }>('/api/health', {
       method: 'POST',
       keepalive: true,
       body: JSON.stringify({

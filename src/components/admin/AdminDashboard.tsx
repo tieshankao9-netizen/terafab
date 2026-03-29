@@ -105,6 +105,8 @@ export default function AdminDashboard() {
   const confirmedDonations = donations.filter((d) => d.status === 1)
   const pendingDonations = donations.filter((d) => d.status === 0)
   const totalUSDT = confirmedDonations.reduce((s, d) => s + d.amount, 0)
+  const totalLikesLabel = stats ? stats.totalLikes.toLocaleString() : '—'
+  const likesToLaunchLabel = stats ? stats.likesToLaunch.toLocaleString() : '10,000'
 
   return (
     <div className="space-y-6">
@@ -138,8 +140,8 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           label="总助力次数"
-          value={stats?.totalLikes.toLocaleString() ?? '—'}
-          sub={`目标 ${stats?.likesToLaunch.toLocaleString() ?? '10,000'}`}
+          value={totalLikesLabel}
+          sub={`目标 ${likesToLaunchLabel}`}
           icon={<Users size={18} />}
           color="#FF8C00"
           delay={0}

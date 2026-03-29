@@ -1,7 +1,5 @@
 import { motion } from 'framer-motion'
 import { Suspense } from 'react'
-import { Canvas } from '@react-three/fiber'
-import { Stars, Float } from '@react-three/drei'
 import EnergyBar from '@/components/ui/EnergyBar'
 import LaunchButton from '@/components/ui/LaunchButton'
 import DonateModal from '@/components/ui/DonateModal'
@@ -11,9 +9,12 @@ import StarBackground from '@/components/effects/StarBackground'
 import LaunchOverlay from '@/components/effects/LaunchOverlay'
 import Scene from '@/components/scene/Scene'
 import { useGameStore } from '@/hooks/useGameStore'
+import { useSiteLanguage } from '@/i18n/siteLanguage'
 
 // Loading fallback for 3D scene
 function SceneLoading() {
+  const { copy } = useSiteLanguage()
+
   return (
     <div className="w-full h-full flex items-center justify-center">
       <div className="text-center space-y-4">
@@ -24,7 +25,7 @@ function SceneLoading() {
           style={{ borderTopColor: '#FF4D00', borderRightColor: '#FF8C00' }}
         />
         <p className="font-mono text-xs text-metal-light opacity-40 tracking-widest">
-          INITIALIZING 3D ENGINE...
+          {copy.home.sceneLoading}
         </p>
       </div>
     </div>
@@ -32,7 +33,8 @@ function SceneLoading() {
 }
 
 export default function HomePage() {
-  const { launchPhase, setShowLeaderboard } = useGameStore()
+  const { setShowLeaderboard } = useGameStore()
+  const { copy } = useSiteLanguage()
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-space-black">
@@ -63,21 +65,39 @@ export default function HomePage() {
         {/* Hero section */}
         <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8">
           {/* Mission badge */}
-          <motion.div
-            className="mb-6 flex items-center gap-2 px-4 py-2 rounded-full"
-            style={{
-              background: 'rgba(255, 77, 0, 0.08)',
-              border: '1px solid rgba(255, 77, 0, 0.25)',
-            }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-ignite-orange animate-pulse" />
-            <span className="font-mono text-xs text-ignite-amber tracking-widest uppercase">
-              Mission: Mars Domain Launch
-            </span>
-          </motion.div>
+          <div className="mb-6 flex flex-wrap items-center justify-center gap-3">
+            <motion.div
+              className="flex items-center gap-2 px-4 py-2 rounded-full"
+              style={{
+                background: 'rgba(255, 77, 0, 0.08)',
+                border: '1px solid rgba(255, 77, 0, 0.25)',
+              }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-ignite-orange animate-pulse" />
+              <span className="font-mono text-xs text-ignite-amber tracking-widest uppercase">
+                {copy.home.missionBadge}
+              </span>
+            </motion.div>
+
+            <motion.div
+              className="flex items-center gap-2 px-4 py-2 rounded-full"
+              style={{
+                background: 'rgba(0, 212, 255, 0.08)',
+                border: '1px solid rgba(0, 212, 255, 0.2)',
+              }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.65 }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-plasma-cyan animate-pulse" />
+              <span className="font-mono text-xs text-plasma-cyan tracking-widest uppercase">
+                {copy.home.entertainmentBadge}
+              </span>
+            </motion.div>
+          </div>
 
           {/* Main title */}
           <motion.h1
@@ -111,7 +131,7 @@ export default function HomePage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9 }}
           >
-            .TOP — THE DOMAIN FOR MARS
+            {copy.home.tagline}
           </motion.div>
 
           <motion.p
@@ -124,10 +144,10 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1 }}
           >
-            帮助飞船起飞，点亮星际征程。
+            {copy.home.description}
             <br />
             <span style={{ color: '#4060a0' }}>
-              每一次助力都是一份宇宙级的存在证明。
+              {copy.home.descriptionAccent}
             </span>
           </motion.p>
 
@@ -164,9 +184,10 @@ export default function HomePage() {
                 letterSpacing: '0.1em',
               }}
             >
-              🏆 查看光荣榜
+              🏆 {copy.home.leaderboardCta}
             </button>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg"
+            <div
+              className="flex items-center gap-2 px-4 py-2 rounded-lg"
               style={{
                 border: '1px solid rgba(0, 212, 255, 0.12)',
                 color: '#4060a0',
@@ -174,9 +195,29 @@ export default function HomePage() {
               }}
             >
               <span className="font-mono text-[10px] tracking-widest">
-                BNB链 · USDT捐赠 · 星际存证
+                {copy.home.chainBadge}
               </span>
             </div>
+          </motion.div>
+
+          <motion.div
+            className="mt-5 w-full max-w-xl rounded-2xl px-4 py-4"
+            style={{
+              background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.06), rgba(255, 140, 0, 0.05))',
+              border: '1px solid rgba(0, 212, 255, 0.14)',
+            }}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.65 }}
+          >
+            <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-plasma-cyan opacity-70">
+              {copy.home.missionBadge}
+            </div>
+            <p className="mt-2 font-body text-sm leading-relaxed text-metal-light opacity-75">
+              {copy.home.entertainmentNote}
+              <br />
+              <span style={{ color: '#FFD700' }}>{copy.home.nftHint}</span>
+            </p>
           </motion.div>
         </div>
 
@@ -190,12 +231,12 @@ export default function HomePage() {
         >
           <div className="flex flex-wrap items-center justify-between gap-4 max-w-5xl mx-auto">
             <div className="flex items-center gap-6">
-              <InfoChip label="域名" value="terafab.top" />
-              <InfoChip label="区块链" value="BNB Smart Chain" />
-              <InfoChip label="货币" value="USDT · BEP-20" />
+              <InfoChip label={copy.home.infoDomain} value="terafab.top" />
+              <InfoChip label={copy.home.infoChain} value="BNB Smart Chain" />
+              <InfoChip label={copy.home.infoToken} value="USDT · BEP-20" />
             </div>
             <div className="font-mono text-[10px] text-metal-light opacity-20 tracking-wider">
-              © 2025 TERAFAB · MADE FOR MARS
+              {copy.home.footer}
             </div>
           </div>
         </motion.div>

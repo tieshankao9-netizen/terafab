@@ -99,7 +99,7 @@ export const wagmiConfig = defaultWagmiConfig({
   enableEmail: false,
   metadata: {
     name: 'Terafab',
-    description: '点燃火星征程 — 助力飞船起飞',
+    description: 'Interactive fan mission on BNB Chain',
     url: 'https://terafab.top',
     icons: ['https://terafab.top/favicon.svg'],
   },

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/hooks/useGameStore'
+import { useSiteLanguage } from '@/i18n/siteLanguage'
 
 // Animated segment bar (NASA/SpaceX HUD style)
 function SegmentBar({ percent }: { percent: number }) {
@@ -46,7 +47,8 @@ function SegmentBar({ percent }: { percent: number }) {
 }
 
 export default function EnergyBar() {
-  const { energyPercent, totalLikes, launchPhase, hasLaunched } = useGameStore()
+  const { energyPercent, totalLikes, launchPhase, hasLaunched, likesToLaunch } = useGameStore()
+  const { copy, formatNumber } = useSiteLanguage()
   const [displayPercent, setDisplayPercent] = useState(energyPercent)
   const [displayLikes, setDisplayLikes] = useState(totalLikes)
   const prevLikes = useRef(totalLikes)
@@ -79,12 +81,12 @@ export default function EnergyBar() {
   }, [energyPercent, totalLikes])
 
   const phaseLabel: Record<string, { text: string; color: string }> = {
-    idle: { text: 'STANDBY', color: '#00D4FF' },
-    charging: { text: 'CHARGING', color: '#FF8C00' },
-    countdown: { text: 'T-MINUS', color: '#FF4D00' },
-    ignition: { text: 'IGNITION', color: '#FFD700' },
-    launched: { text: 'LAUNCHED', color: '#00FFCC' },
-    boosting: { text: 'BOOSTING', color: '#FF8C00' },
+    idle: { text: copy.energy.phases.idle, color: '#00D4FF' },
+    charging: { text: copy.energy.phases.charging, color: '#FF8C00' },
+    countdown: { text: copy.energy.phases.countdown, color: '#FF4D00' },
+    ignition: { text: copy.energy.phases.ignition, color: '#FFD700' },
+    launched: { text: copy.energy.phases.launched, color: '#00FFCC' },
+    boosting: { text: copy.energy.phases.boosting, color: '#FF8C00' },
   }
   const phase = phaseLabel[launchPhase] ?? phaseLabel.charging
 
@@ -113,7 +115,7 @@ export default function EnergyBar() {
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-ignite-orange animate-pulse" />
               <span className="font-mono text-xs text-metal-light tracking-widest uppercase opacity-70">
-                IGNITION ENERGY
+                {copy.energy.title}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -158,23 +160,23 @@ export default function EnergyBar() {
             {/* Center label */}
             <div className="text-center">
               <div className="font-mono text-xs text-metal-light opacity-50 tracking-widest">
-                TOTAL ASSISTS
+                {copy.energy.totalBoosts}
               </div>
               <div
                 className={`font-display text-xl font-bold text-ignite-gold ${likeFlash ? 'number-pop' : ''}`}
                 style={{ textShadow: '0 0 15px rgba(255, 215, 0, 0.6)' }}
               >
-                {totalLikes.toLocaleString()}
+                {formatNumber(displayLikes)}
               </div>
             </div>
 
             {/* Target indicator */}
             <div className="text-right">
               <div className="font-mono text-xs text-metal-light opacity-50 tracking-widest">
-                TARGET
+                {copy.energy.target}
               </div>
               <div className="font-display text-xl font-bold text-plasma-blue">
-                10,000
+                {formatNumber(likesToLaunch)}
               </div>
             </div>
           </div>
@@ -196,7 +198,7 @@ export default function EnergyBar() {
                     textShadow: '0 0 30px #FFD700, 0 0 60px #FF4D00',
                   }}
                 >
-                  🔥 MAIN ENGINE START — T-0 🔥
+                  {copy.energy.ignitionBanner}
                 </span>
               </motion.div>
             )}
@@ -211,7 +213,7 @@ export default function EnergyBar() {
                   className="font-display text-sm font-bold tracking-widest"
                   style={{ color: '#00FFCC', textShadow: '0 0 20px #00FFCC' }}
                 >
-                  🚀 TERAFAB HAS LEFT THE BUILDING — ORBIT ACHIEVED
+                  {copy.energy.launchedBanner}
                 </span>
               </motion.div>
             )}
@@ -226,7 +228,7 @@ export default function EnergyBar() {
                   className="font-display text-sm font-bold tracking-widest"
                   style={{ color: '#FF4D00', textShadow: '0 0 20px #FF4D00' }}
                 >
-                  ⚡ CRITICAL ENERGY — LAUNCH IMMINENT ⚡
+                  {copy.energy.countdownBanner}
                 </span>
               </motion.div>
             )}

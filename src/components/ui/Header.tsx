@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion'
 import { Trophy, Globe } from 'lucide-react'
 import { useGameStore } from '@/hooks/useGameStore'
+import { SITE_LANGUAGE_OPTIONS, useSiteLanguage } from '@/i18n/siteLanguage'
 
 export default function Header() {
   const { setShowLeaderboard, totalLikes } = useGameStore()
+  const { locale, setLocale, copy, formatNumber } = useSiteLanguage()
 
   return (
     <motion.header
@@ -50,12 +52,38 @@ export default function Header() {
       >
         <div className="w-1.5 h-1.5 rounded-full bg-ignite-orange animate-pulse" />
         <span className="font-mono text-xs text-ignite-amber">
-          {totalLikes.toLocaleString()} 助推者在线
+          {formatNumber(totalLikes)} {copy.header.boostsLogged}
         </span>
       </div>
 
       {/* Right nav */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div
+          className="flex items-center gap-1 rounded-lg p-1"
+          style={{
+            border: '1px solid rgba(0, 212, 255, 0.2)',
+            background: 'rgba(0, 212, 255, 0.04)',
+          }}
+          aria-label={copy.header.language}
+        >
+          {SITE_LANGUAGE_OPTIONS.map((option) => {
+            const isActive = option.value === locale
+
+            return (
+              <button
+                key={option.value}
+                onClick={() => setLocale(option.value)}
+                className="px-2 py-1 rounded-md font-mono text-[10px] transition-all"
+                style={{
+                  color: isActive ? '#04111f' : '#9fb2d9',
+                  background: isActive ? 'linear-gradient(135deg, #00A3FF, #00D4FF)' : 'transparent',
+                }}
+              >
+                {option.label}
+              </button>
+            )
+          })}
+        </div>
         <button
           onClick={() => setShowLeaderboard(true)}
           className="flex items-center gap-2 px-3 py-2 rounded-lg font-mono text-xs transition-all hover:scale-105"
@@ -66,7 +94,7 @@ export default function Header() {
           }}
         >
           <Trophy size={13} />
-          <span className="hidden sm:inline">光荣榜</span>
+          <span className="hidden sm:inline">{copy.header.board}</span>
         </button>
         <a
           href="https://terafab.top"
@@ -80,7 +108,7 @@ export default function Header() {
           }}
         >
           <Globe size={13} />
-          <span className="hidden sm:inline">域名</span>
+          <span className="hidden sm:inline">{copy.header.domain}</span>
         </a>
       </div>
     </motion.header>

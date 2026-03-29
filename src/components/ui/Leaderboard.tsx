@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Trophy, Star, RefreshCw } from 'lucide-react'
 import { useGameStore, Donation } from '@/hooks/useGameStore'
+import { useSiteLanguage } from '@/i18n/siteLanguage'
 import { fetchDonations } from '@/utils/api'
 import { MOCK_DONORS } from '@/utils/mockData'
 
@@ -14,6 +15,7 @@ const rankColors = ['#FFD700', '#C0C8D8', '#CD7F32']
 const rankIcons = ['🥇', '🥈', '🥉']
 
 function DonorCard({ donor, rank }: { donor: Donation; rank: number }) {
+  const { formatDate, formatNumber } = useSiteLanguage()
   const isTop3 = rank < 3
   return (
     <motion.div
@@ -48,7 +50,7 @@ function DonorCard({ donor, rank }: { donor: Donation; rank: number }) {
           {donor.name}
         </div>
         <div className="font-mono text-xs opacity-40 text-metal-light">
-          {new Date(donor.created_at).toLocaleDateString('zh-CN')}
+          {formatDate(donor.created_at)}
         </div>
       </div>
 
@@ -68,7 +70,7 @@ function DonorCard({ donor, rank }: { donor: Donation; rank: number }) {
             textShadow: isTop3 ? `0 0 12px ${rankColors[rank]}60` : 'none',
           }}
         >
-          {donor.amount.toLocaleString()}
+          {formatNumber(donor.amount)}
         </div>
         <div className="font-mono text-xs opacity-40 text-plasma-cyan">USDT</div>
       </div>
@@ -95,9 +97,11 @@ const MOCK_AS_DONATIONS: Donation[] = MOCK_DONORS.map((d) => ({
 }))
 
 export default function Leaderboard() {
-  const { showLeaderboard, setShowLeaderboard, liveDonations, serverConnected } = useGameStore()
+  const { showLeaderboard, setShowLeaderboard, liveDonations } = useGameStore()
+  const { copy, formatNumber } = useSiteLanguage()
   const [localDonations, setLocalDonations] = useState<Donation[]>([])
   const [loading, setLoading] = useState(false)
+  const [usingSamples, setUsingSamples] = useState(true)
 
   // Fetch on open
   useEffect(() => {
@@ -109,11 +113,14 @@ export default function Leaderboard() {
       try {
         const data = await fetchDonations()
         if (!cancelled) {
-          setLocalDonations(data.donations.length > 0 ? data.donations : MOCK_AS_DONATIONS)
+          const hasLiveDonations = data.donations.length > 0
+          setLocalDonations(hasLiveDonations ? data.donations : MOCK_AS_DONATIONS)
+          setUsingSamples(!hasLiveDonations)
         }
       } catch {
         if (!cancelled) {
           setLocalDonations(MOCK_AS_DONATIONS)
+          setUsingSamples(true)
         }
       } finally {
         if (!cancelled) {
@@ -135,7 +142,10 @@ export default function Leaderboard() {
 
   // Sync live socket updates
   useEffect(() => {
-    if (liveDonations.length > 0) setLocalDonations(liveDonations)
+    if (liveDonations.length > 0) {
+      setLocalDonations(liveDonations)
+      setUsingSamples(false)
+    }
   }, [liveDonations])
 
   const displayDonations = localDonations.length > 0 ? localDonations : MOCK_AS_DONATIONS
@@ -184,7 +194,7 @@ export default function Leaderboard() {
                     className="font-display text-xl font-bold"
                     style={{ color: '#FFD700', textShadow: '0 0 20px rgba(255,215,0,0.5)' }}
                   >
-                    星际光荣榜
+                    {copy.leaderboard.title}
                   </h2>
                 </div>
                 <div className="flex items-center gap-3">
@@ -205,7 +215,7 @@ export default function Leaderboard() {
                 </div>
               </div>
               <p className="font-mono text-xs text-metal-light opacity-50">
-                TERAFAB MISSION SUPPORTERS — HALL OF FAME
+                {copy.leaderboard.subtitle}
               </p>
 
               <div
@@ -216,20 +226,26 @@ export default function Leaderboard() {
                 }}
               >
                 <span className="font-mono text-xs text-metal-light opacity-60 uppercase tracking-wider">
-                  总捐赠额
+                  {copy.leaderboard.totalSupport}
                 </span>
                 <span
                   className="font-display text-lg font-bold"
                   style={{ color: '#00FFCC', textShadow: '0 0 15px rgba(0,255,204,0.5)' }}
                 >
-                  {totalUsdt.toLocaleString()} USDT
+                  {formatNumber(totalUsdt)} USDT
                 </span>
               </div>
 
-              {!serverConnected && (
-                <div className="mt-2 px-3 py-1.5 rounded text-center">
-                  <span className="font-mono text-[10px] text-ignite-orange opacity-60">
-                    ⚠ 显示演示数据 · 后端未连接
+              {usingSamples && (
+                <div
+                  className="mt-3 rounded-lg px-3 py-2"
+                  style={{
+                    background: 'rgba(255, 140, 0, 0.08)',
+                    border: '1px solid rgba(255, 140, 0, 0.18)',
+                  }}
+                >
+                  <span className="font-mono text-[10px] text-ignite-amber opacity-80">
+                    {copy.leaderboard.sampleBanner}
                   </span>
                 </div>
               )}

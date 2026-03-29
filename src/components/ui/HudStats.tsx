@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameStore } from '@/hooks/useGameStore'
+import { useSiteLanguage } from '@/i18n/siteLanguage'
 
 // Fake telemetry data that animates
 function useTelemetry() {
@@ -76,6 +77,7 @@ function TelemetryRow({
 
 export default function HudStats() {
   const { launchPhase, energyPercent } = useGameStore()
+  const { copy } = useSiteLanguage()
   const telemetry = useTelemetry()
   const isLaunching = launchPhase === 'ignition' || launchPhase === 'launched'
 
@@ -102,26 +104,26 @@ export default function HudStats() {
           style={{ background: isLaunching ? '#FF4D00' : '#00D4FF' }}
         />
         <span className="font-mono text-[9px] text-metal-light opacity-50 tracking-widest uppercase">
-          Mission Telemetry
+          {copy.hud.title}
         </span>
       </div>
 
       <div className="px-3 py-2 space-y-0.5">
         <TelemetryRow
-          label="Thrust"
+          label={copy.hud.thrust}
           value={Math.round(telemetry.thrust).toString()}
           unit="%"
           color="#FF8C00"
           warning={telemetry.thrust > 95}
         />
         <TelemetryRow
-          label="Fuel"
+          label={copy.hud.fuel}
           value={Math.round(telemetry.fuel).toString()}
           unit="%"
           warning={telemetry.fuel < 20}
         />
         <TelemetryRow
-          label="Altitude"
+          label={copy.hud.altitude}
           value={
             telemetry.altitude > 1000
               ? (telemetry.altitude / 1000).toFixed(1)
@@ -131,19 +133,19 @@ export default function HudStats() {
           color="#00FFCC"
         />
         <TelemetryRow
-          label="Velocity"
+          label={copy.hud.velocity}
           value={Math.round(telemetry.velocity).toString()}
           unit="m/s"
           color="#FFD700"
         />
         <TelemetryRow
-          label="Eng Temp"
+          label={copy.hud.engineTemp}
           value={Math.round(telemetry.temp).toString()}
           unit="°C"
           warning={telemetry.temp > 2800}
         />
         <TelemetryRow
-          label="Energy"
+          label={copy.hud.energy}
           value={energyPercent.toString()}
           unit="%"
           color="#FF4D00"
@@ -154,7 +156,7 @@ export default function HudStats() {
       {/* Bottom blinking cursor */}
       <div className="px-3 pb-2 pt-1">
         <span className="font-mono text-[9px] opacity-30 text-plasma-cyan">
-          SYS_OK ▌
+          {copy.hud.sysOk} ▌
         </span>
       </div>
     </motion.div>

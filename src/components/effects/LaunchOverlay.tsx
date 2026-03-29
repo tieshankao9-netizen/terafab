@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/hooks/useGameStore'
+import { useSiteLanguage } from '@/i18n/siteLanguage'
 
 export default function LaunchOverlay() {
   const { launchPhase } = useGameStore()
+  const { copy } = useSiteLanguage()
   const isIgnition = launchPhase === 'ignition'
   const isLaunched = launchPhase === 'launched'
 
@@ -46,10 +48,10 @@ export default function LaunchOverlay() {
                   letterSpacing: '-0.02em',
                 }}
               >
-                点火
+                {copy.overlay.ignitionTitle}
                 <br />
                 <span style={{ fontSize: '0.5em', letterSpacing: '0.15em', color: '#FF8C00' }}>
-                  MAIN ENGINE START
+                  {copy.overlay.ignitionSubtitle}
                 </span>
               </motion.div>
             </div>
@@ -75,10 +77,10 @@ export default function LaunchOverlay() {
               className="font-display font-bold text-sm tracking-widest"
               style={{ color: '#00FFCC', textShadow: '0 0 15px rgba(0,255,204,0.8)' }}
             >
-              🚀 TERAFAB IS FLYING — 轨道已达成
+              {copy.overlay.successTitle}
             </div>
             <div className="font-mono text-xs text-metal-light opacity-50 mt-1 tracking-wider">
-              持续助推 · 名留星际
+              {copy.overlay.successSubtitle}
             </div>
           </motion.div>
         )}

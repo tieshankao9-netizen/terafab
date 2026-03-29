@@ -17,6 +17,7 @@ import {
   USDT_ABI,
   bsc,
 } from '@/utils/web3Config'
+import { useSiteLanguage } from '@/i18n/siteLanguage'
 import { submitDonationPending, fetchPublicConfig } from '@/utils/api'
 
 export type DonationStep =
@@ -42,6 +43,7 @@ export function useDonation() {
   const { switchChainAsync } = useSwitchChain()
   const { writeContractAsync } = useWriteContract()
   const publicClient = usePublicClient()
+  const { copy } = useSiteLanguage()
 
   const [state, setState] = useState<DonationState>({ step: 'idle' })
 
@@ -76,7 +78,7 @@ export function useDonation() {
             throw new Error('Wallet address not configured')
           }
         } catch {
-          throw new Error('无法获取收款地址，请联系管理员')
+          throw new Error(copy.donate.errors.walletAddressMissing)
         }
 
         // ── Step 4: Send USDT transfer ────────────────────────────────────
@@ -117,7 +119,7 @@ export function useDonation() {
 
         // User rejected in wallet — friendly message
         if (msg.includes('rejected') || msg.includes('denied') || msg.includes('cancel')) {
-          setState({ step: 'error', errorMsg: '你取消了交易 💫 下次再来！' })
+          setState({ step: 'error', errorMsg: copy.donate.errors.userRejected })
         } else if (msg === 'WALLET_NOT_CONNECTED') {
           setState({ step: 'idle' }) // Let component show wallet connect modal
         } else {
@@ -125,7 +127,7 @@ export function useDonation() {
         }
       }
     },
-    [isConnected, address, chainId, switchChainAsync, writeContractAsync, publicClient]
+    [address, chainId, copy.donate.errors.userRejected, copy.donate.errors.walletAddressMissing, isConnected, publicClient, switchChainAsync, writeContractAsync]
   )
 
   return { state, donate, reset, isConnected, address }

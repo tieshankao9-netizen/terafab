@@ -7,6 +7,7 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/hooks/useGameStore'
+import { useSiteLanguage } from '@/i18n/siteLanguage'
 import { submitLike } from '@/utils/api'
 
 const calcEnergyPercent = (totalLikes: number, likesToLaunch: number) =>
@@ -55,6 +56,7 @@ export default function LaunchButton() {
     setHasVoted,
     serverConnected,
   } = useGameStore()
+  const { copy } = useSiteLanguage()
 
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([])
   const [floatingNums, setFloatingNums] = useState<{ id: number; x: number; y: number }[]>([])
@@ -108,7 +110,7 @@ export default function LaunchButton() {
                   ? 'charging'
                   : 'idle',
             })
-            setErrorMsg('你已经助力过了！每人限一次 🌍')
+            setErrorMsg(copy.launch.alreadyVoted)
             setTimeout(() => setErrorMsg(null), 3000)
           } else if (result.success) {
             setHasVoted(true)
@@ -121,23 +123,23 @@ export default function LaunchButton() {
         }
       }
     },
-    [addLike, hasVoted, isSubmitting, serverConnected, setHasVoted]
+    [addLike, copy.launch.alreadyVoted, hasVoted, isSubmitting, serverConnected, setHasVoted]
   )
 
   const isLaunching = launchPhase === 'ignition'
   const disabled = (hasVoted && !hasLaunched) || isSubmitting
 
   const buttonLabel = isSubmitting
-    ? '发射中...'
+    ? copy.launch.button.submitting
     : hasVoted
     ? hasLaunched
-      ? '🚀 助推器就绪'
-      : '✅ 已助力点火'
+      ? copy.launch.button.afterLaunch
+      : copy.launch.button.voted
     : isLaunching
-    ? '🔥 点火中...'
+    ? copy.launch.button.ignition
     : energyPercent >= 90
-    ? '⚡ 临界能量！点火！'
-    : '🚀 点火助力'
+    ? copy.launch.button.critical
+    : copy.launch.button.idle
 
   const buttonGlow =
     energyPercent >= 90
@@ -237,7 +239,7 @@ export default function LaunchButton() {
             animate={{ opacity: 1, y: 0 }}
             className="font-mono text-xs text-metal-light opacity-60 text-center"
           >
-            每个地球人只能助力一次 · 每次都算数 🌍
+            {copy.launch.hints.singleVote}
           </motion.p>
         )}
         {hasLaunched && (
@@ -247,7 +249,7 @@ export default function LaunchButton() {
             className="font-mono text-xs text-center"
             style={{ color: '#00FFCC', textShadow: '0 0 10px #00FFCC' }}
           >
-            飞船已升空！每次助推都是星际传说 🚀
+            {copy.launch.hints.afterLaunch}
           </motion.p>
         )}
       </AnimatePresence>
@@ -272,7 +274,13 @@ export default function LaunchButton() {
             )
           })}
           <span className="font-mono text-xs text-metal-light opacity-40 ml-1">
-            {energyPercent < 20 ? '冷启动' : energyPercent < 60 ? '蓄能中' : energyPercent < 90 ? '接近临界' : '准备点火!'}
+            {energyPercent < 20
+              ? copy.launch.status.cold
+              : energyPercent < 60
+              ? copy.launch.status.charging
+              : energyPercent < 90
+              ? copy.launch.status.nearCritical
+              : copy.launch.status.ready}
           </span>
         </div>
       )}
@@ -284,7 +292,7 @@ export default function LaunchButton() {
           style={{ background: serverConnected ? '#00FFCC' : '#FF4D00' }}
         />
         <span className="font-mono text-[9px] opacity-30 text-metal-light">
-          {serverConnected ? 'LIVE' : 'OFFLINE MODE'}
+          {serverConnected ? copy.launch.live : copy.launch.offline}
         </span>
       </div>
     </div>

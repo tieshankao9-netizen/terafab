@@ -9,26 +9,22 @@ import { X, Zap, Trophy, Rocket, ExternalLink, CheckCircle, AlertTriangle } from
 import { useWeb3Modal } from '@web3modal/wagmi/react'
 import { useConnect } from 'wagmi'
 import { useGameStore } from '@/hooks/useGameStore'
+import { useSiteLanguage } from '@/i18n/siteLanguage'
 import { useDonation, DonationStep } from '@/hooks/useDonation'
 import { bsc } from '@/utils/web3Config'
 import { hasWalletConnectProjectId } from '@/utils/runtimeConfig'
 
 const QUICK_AMOUNTS = [10, 50, 100, 500]
 
-// Step labels for the progress indicator
-const STEP_LABELS: Partial<Record<DonationStep, string>> = {
-  connecting: '连接钱包中...',
-  switching_chain: '切换到 BNB 链...',
-  sending: '等待钱包确认...',
-  confirming: '链上确认中...',
-  submitting: '提交上榜中...',
-  success: '上榜成功！',
-  error: '出错了',
-}
-
-function StepIndicator({ step }: { step: DonationStep }) {
+function StepIndicator({
+  step,
+  labels,
+}: {
+  step: DonationStep
+  labels: Partial<Record<DonationStep, string>>
+}) {
   const isActive = !['idle', 'success', 'error'].includes(step)
-  const label = STEP_LABELS[step] ?? ''
+  const label = labels[step] ?? ''
   if (!label) return null
 
   return (
@@ -57,6 +53,7 @@ export default function DonateModal() {
   const { showDonateModal, setShowDonateModal, energyPercent } = useGameStore()
   const { open: openWalletModal } = useWeb3Modal()
   const { connectAsync, connectors, isPending: isConnectingWallet } = useConnect()
+  const { copy } = useSiteLanguage()
   const { state, donate, reset, isConnected, address } = useDonation()
 
   const [view, setView] = useState<'prompt' | 'form'>('prompt')
@@ -93,7 +90,7 @@ export default function DonateModal() {
       ) ?? connectors[0]
 
     if (!preferredConnector) {
-      setConnectError('未检测到浏览器钱包，请先安装 MetaMask 或 Coinbase Wallet')
+      setConnectError(copy.donate.errors.noWallet)
       return
     }
 
@@ -103,7 +100,7 @@ export default function DonateModal() {
         chainId: bsc.id,
       })
     } catch (error) {
-      setConnectError(error instanceof Error ? error.message : '钱包连接失败，请重试')
+      setConnectError(error instanceof Error ? error.message : copy.donate.errors.connectFailed)
     }
   }
 
@@ -170,19 +167,32 @@ export default function DonateModal() {
               >
                 <Zap size={13} className="text-ignite-orange" />
                 <span className="font-mono text-xs text-ignite-amber tracking-wider">
-                  点火能量 +1% → {energyPercent}%
+                  {copy.donate.energyBoost(energyPercent)}
                 </span>
               </div>
 
               {/* Title */}
               <div>
                 <h2 className="font-display text-2xl font-bold" style={{ color: '#FFD700', textShadow: '0 0 20px rgba(255,215,0,0.5)' }}>
-                  飞船蓄势待发！
+                  {copy.donate.title}
                 </h2>
                 <p className="font-body text-sm text-metal-light opacity-70 mt-1.5 leading-relaxed">
-                  感谢你的助力！捐赠 <span className="text-ignite-gold font-semibold">USDT</span> 支持{' '}
-                  <span className="text-plasma-cyan font-semibold">Terafab</span> 火星任务，
-                  <span className="text-ignite-orange"> 名留星际光荣榜 🏆</span>
+                  {copy.donate.body}
+                </p>
+              </div>
+
+              <div
+                className="rounded-xl px-3 py-3"
+                style={{
+                  background: 'rgba(255, 215, 0, 0.05)',
+                  border: '1px solid rgba(255, 215, 0, 0.14)',
+                }}
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-ignite-gold opacity-75">
+                  {copy.home.entertainmentBadge}
+                </div>
+                <p className="mt-2 font-body text-xs leading-relaxed text-metal-light opacity-65">
+                  {copy.donate.entertainmentNote}
                 </p>
               </div>
 
@@ -196,7 +206,9 @@ export default function DonateModal() {
                   <span className="font-mono text-xs text-plasma-cyan">
                     {address.slice(0, 6)}...{address.slice(-4)}
                   </span>
-                  <span className="font-mono text-[10px] text-metal-light opacity-40 ml-auto">BNB Chain</span>
+                  <span className="font-mono text-[10px] text-metal-light opacity-40 ml-auto">
+                    {copy.donate.walletChain}
+                  </span>
                 </div>
               )}
 
@@ -206,7 +218,7 @@ export default function DonateModal() {
                   style={{ background: 'rgba(0,212,255,0.04)', border: '1px solid rgba(0,212,255,0.14)' }}
                 >
                   <span className="font-mono text-[11px] text-metal-light opacity-60">
-                    当前为浏览器钱包直连模式；如需 WalletConnect，请配置 `VITE_WALLETCONNECT_PROJECT_ID`
+                    {copy.donate.walletConnectHint}
                   </span>
                 </div>
               )}
@@ -235,10 +247,10 @@ export default function DonateModal() {
                       }}
                     >
                       <Trophy size={15} className="inline mr-2" />
-                      登上光荣榜 →
+                      {copy.donate.joinBoard} →
                     </button>
                     <button onClick={handleClose} className="w-full py-2 font-mono text-xs text-metal-light opacity-40 hover:opacity-70">
-                      下次再说
+                      {copy.donate.maybeLater}
                     </button>
                   </motion.div>
                 )}
@@ -249,12 +261,12 @@ export default function DonateModal() {
                     {/* Name */}
                     <div>
                       <label className="font-mono text-[10px] text-metal-light opacity-50 uppercase tracking-wider block mb-1.5">
-                        光荣榜显示名称
+                        {copy.donate.nameLabel}
                       </label>
                       <input
                         value={name}
                         onChange={(e) => setName(e.target.value.slice(0, 20))}
-                        placeholder="你的名字 / 代号"
+                        placeholder={copy.donate.namePlaceholder}
                         className="w-full px-4 py-2.5 rounded-lg font-mono text-sm text-metal-light bg-transparent outline-none"
                         style={{ border: '1px solid rgba(0,212,255,0.25)', background: 'rgba(0,212,255,0.04)' }}
                         maxLength={20}
@@ -265,7 +277,7 @@ export default function DonateModal() {
                     {/* Amount */}
                     <div>
                       <label className="font-mono text-[10px] text-metal-light opacity-50 uppercase tracking-wider block mb-1.5">
-                        捐赠金额 (USDT · BEP-20)
+                        {copy.donate.amountLabel}
                       </label>
                       <div className="flex gap-2 mb-2">
                         {QUICK_AMOUNTS.map((a) => (
@@ -287,7 +299,7 @@ export default function DonateModal() {
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder="自定义金额"
+                        placeholder={copy.donate.customAmount}
                         className="w-full px-4 py-2.5 rounded-lg font-mono text-sm text-metal-light bg-transparent outline-none"
                         style={{ border: '1px solid rgba(255,140,0,0.25)', background: 'rgba(255,140,0,0.04)' }}
                         min="1"
@@ -306,11 +318,11 @@ export default function DonateModal() {
                       }}
                     >
                       <Rocket size={15} className="inline mr-2" />
-                      {isConnected ? '确认并发送 USDT' : '连接钱包并捐赠'}
+                      {isConnected ? copy.donate.submitConnected : copy.donate.submitDisconnected}
                     </button>
 
                     <button onClick={() => setView('prompt')} className="w-full text-center font-mono text-xs text-metal-light opacity-30 hover:opacity-60">
-                      ← 返回
+                      ← {copy.donate.back}
                     </button>
                   </motion.div>
                 )}
@@ -318,7 +330,7 @@ export default function DonateModal() {
                 {/* ── Processing state ── */}
                 {isProcessing && (
                   <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 py-2">
-                    <StepIndicator step={state.step} />
+                    <StepIndicator step={state.step} labels={copy.donate.steps} />
                     {state.txHash && (
                       <a
                         href={`https://bscscan.com/tx/${state.txHash}`}
@@ -327,7 +339,7 @@ export default function DonateModal() {
                         className="flex items-center gap-1.5 font-mono text-xs text-plasma-cyan opacity-70 hover:opacity-100"
                       >
                         <ExternalLink size={11} />
-                        在 BscScan 查看交易
+                        {copy.donate.viewTx}
                       </a>
                     )}
                   </motion.div>
@@ -352,10 +364,10 @@ export default function DonateModal() {
                       className="font-display text-xl font-bold"
                       style={{ color: '#00FFCC', textShadow: '0 0 20px rgba(0,255,204,0.5)' }}
                     >
-                      上榜成功！
+                      {copy.donate.successTitle}
                     </div>
                     <p className="font-body text-sm text-metal-light opacity-60">
-                      你已名留星际光荣榜，感谢支持 Terafab 火星任务 🚀
+                      {copy.donate.successBody}
                     </p>
                     {state.confirmedTxHash && (
                       <a
@@ -365,7 +377,7 @@ export default function DonateModal() {
                         className="inline-flex items-center gap-1.5 font-mono text-xs text-plasma-cyan"
                       >
                         <ExternalLink size={11} />
-                        查看链上凭证
+                        {copy.donate.viewProof}
                       </a>
                     )}
                     <button
@@ -373,7 +385,7 @@ export default function DonateModal() {
                       className="w-full py-2.5 rounded-xl font-mono text-sm mt-2"
                       style={{ border: '1px solid rgba(0,212,255,0.3)', color: '#00D4FF' }}
                     >
-                      关闭
+                      {copy.donate.close}
                     </button>
                   </motion.div>
                 )}
@@ -393,7 +405,7 @@ export default function DonateModal() {
                       className="w-full py-2.5 rounded-xl font-mono text-sm"
                       style={{ border: '1px solid rgba(255,77,0,0.3)', color: '#FF8C00' }}
                     >
-                      重试
+                      {copy.donate.retry}
                     </button>
                   </motion.div>
                 )}

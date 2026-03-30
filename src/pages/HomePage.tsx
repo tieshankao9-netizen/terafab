@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion'
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import EnergyBar from '@/components/ui/EnergyBar'
 import LaunchButton from '@/components/ui/LaunchButton'
 import DonateModal from '@/components/ui/DonateModal'
 import Leaderboard from '@/components/ui/Leaderboard'
 import HudStats from '@/components/ui/HudStats'
+import OfficialNoticeModal from '@/components/ui/OfficialNoticeModal'
 import StarBackground from '@/components/effects/StarBackground'
 import LaunchOverlay from '@/components/effects/LaunchOverlay'
 import Scene from '@/components/scene/Scene'
@@ -35,6 +36,7 @@ function SceneLoading() {
 export default function HomePage() {
   const { setShowLeaderboard } = useGameStore()
   const { copy } = useSiteLanguage()
+  const [showOfficialNotice, setShowOfficialNotice] = useState(true)
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-space-black">
@@ -290,6 +292,10 @@ export default function HomePage() {
       </motion.div>
 
       {/* Modals */}
+      <OfficialNoticeModal
+        open={showOfficialNotice}
+        onClose={() => setShowOfficialNotice(false)}
+      />
       <DonateModal />
       <Leaderboard />
     </div>
